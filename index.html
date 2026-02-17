@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Centre IRM – Supervision</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+/* HEADER */
+header {
+    background: #ffffff;
+    padding: 30px 50px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+header img {
+    height: 70px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+/* CONTAINER */
+.container {
+    max-width: 1100px;
+    margin: 80px auto;
+    padding: 0 20px;
+    display: grid;
+    gap: 40px;
+}
+
+/* CLICKABLE BLOCKS */
+.card {
+    background: #2563eb;
+    color: white;
+    padding: 50px;
+    border-radius: 24px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 15px 40px rgba(37,99,235,0.35);
+}
+
+.card h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.6rem;
+}
+
+.card p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+/* Glow effect */
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 25px rgba(37,99,235,0.8),
+                0 20px 50px rgba(37,99,235,0.5);
+}
+
+/* Slight variation per block */
+.card:nth-child(2) {
+    background: #1d4ed8;
+    box-shadow: 0 15px 40px rgba(29,78,216,0.35);
+}
+
+.card:nth-child(3) {
+    background: #1e40af;
+    box-shadow: 0 15px 40px rgba(30,64,175,0.35);
+}
+
+footer {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <!-- Place le fichier logo (ex: logo_irm.png) dans le même dossier que index.html -->
+    <img src="Logo_IRM_150.png" alt="Logo IRM">
+    <h1>Système de Supervision IRM</h1>
+</header>
+
+<div class="container">
+
+    <a href="atmosphere.html" class="card">
+        <h2>Données atmosphériques</h2>
+        <p>Température – Pression – Humidité</p>
+    </a>
+
+    <a href="eaufroide.html" class="card">
+        <h2>Données eau glacée</h2>
+        <p>Température circuit de refroidissement</p>
+    </a>
+
+    <a href="compresseur.html" class="card">
+        <h2>Données Compresseur</h2>
+        <p>Vibration compresseur</p>
+    </a>
+
+</div>
+
+<footer>
+    Plateforme IRM – INT | Supervision technique
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Données Compresseur</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.card { position: relative; }
+
+.status-badge {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 1.4rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    Données Compresseur
+</header>
+
+<div class="nav">
+    <a href="index.html" class="back-button">← Retour à l’accueil</a>
+</div>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Vibration compresseur</h2>
+        <div id="comp_status" class="status-badge">●</div>
+
+        <div class="value" id="comp_amp">--</div>
+        <div class="timestamp" id="comp_time"></div>
+
+        <canvas id="comp_chart" height="120"></canvas>
+    </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
+const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
+
+/* ===== FORMAT IDENTIQUE ===== */
+
+function formatLocalTime(utcString) {
+
+    const date = new Date(utcString);
+
+    const options = {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    };
+
+    const parts = new Intl.DateTimeFormat("fr-FR", options)
+        .formatToParts(date);
+
+    const year = parts.find(p => p.type === "year").value;
+    const month = parts.find(p => p.type === "month").value;
+    const day = parts.find(p => p.type === "day").value;
+    const hour = parts.find(p => p.type === "hour").value;
+    const minute = parts.find(p => p.type === "minute").value;
+
+    return `${year}-${month}-${day} à ${hour}:${minute}`;
+}
+
+/* ===== BADGE ===== */
+
+function updateStatus(badgeId, timestamp) {
+
+    const now = new Date();
+    const last = new Date(timestamp);
+    const diffMinutes = (now - last) / 1000 / 60;
+
+    const badge = document.getElementById(badgeId);
+
+    if (diffMinutes <= 2) {
+        badge.style.color = "#22c55e";
+    } else {
+        badge.style.color = "#ef4444";
+    }
+}
+
+/* ===== SUPABASE ===== */
+
+async function fetchLatest(device) {
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&order=timestamp.desc&limit=1`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    const data = await response.json();
+    return data[0];
+}
+
+async function fetchLast6Hours(device) {
+
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    return await response.json();
+}
+
+/* ===== GRAPH ===== */
+
+let compChart;
+
+function createChart(data) {
+
+    const ctx = document.getElementById("comp_chart").getContext("2d");
+
+    const labels = data.map(d => {
+        const date = new Date(d.timestamp);
+        return date.toLocaleTimeString("fr-FR", {
+            timeZone: "Europe/Paris",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        });
+    });
+
+    const values = data.map(d => d.amplitude);
+
+    return new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Amplitude vibration",
+                data: values,
+                borderColor: "#f97316",
+                backgroundColor: "rgba(249,115,22,0.1)",
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#94a3b8",
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    }
+                },
+                y: {
+                    ticks: { color: "#94a3b8" }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: "#e2e8f0" }
+                }
+            }
+        }
+    });
+}
+
+/* ===== REFRESH ===== */
+
+async function refreshValues() {
+
+    const comp = await fetchLatest("arduino_ntc_01");
+
+    if (comp && comp.amplitude !== null) {
+
+        document.getElementById("comp_amp").textContent =
+            comp.amplitude.toFixed(2);
+
+        document.getElementById("comp_time").textContent =
+            "Dernière mesure : " + formatLocalTime(comp.timestamp);
+
+        updateStatus("comp_status", comp.timestamp);
+    }
+}
+
+async function loadChart() {
+
+    const data = await fetchLast6Hours("arduino_ntc_01");
+
+    if (compChart) compChart.destroy();
+
+    compChart = createChart(data);
+}
+
+/* ===== TIMERS ===== */
+
+refreshValues();
+loadChart();
+
+setInterval(refreshValues, 30000);
+setInterval(loadChart, 60000);
+
+</script>
+
+</body>
+</html>

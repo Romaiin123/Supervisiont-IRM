@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Données atmosphériques</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+.card { position: relative; }
+
+.status-badge {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 1.4rem;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    Données atmosphériques
+</header>
+
+<div class="nav">
+    <a href="index.html" class="back-button">← Retour à l’accueil</a>
+</div>
+
+<div class="container">
+
+    <!-- Mokescaner -->
+    <div class="card">
+        <h2>Arduino Mokescaner</h2>
+        <div id="m_status" class="status-badge">●</div>
+
+        <div class="value" id="m_temp">Température : --</div>
+        <div class="value" id="m_hum">Humidité : --</div>
+        <div class="value" id="m_press">Pression : --</div>
+        <div class="timestamp" id="m_time"></div>
+
+        <canvas id="m_chart" height="120"></canvas>
+    </div>
+
+    <!-- Atelier -->
+    <div class="card">
+        <h2>Arduino Atelier</h2>
+        <div id="a_status" class="status-badge">●</div>
+
+        <div class="value" id="a_temp">Température : --</div>
+        <div class="value" id="a_hum">Humidité : --</div>
+        <div class="value" id="a_press">Pression : --</div>
+        <div class="timestamp" id="a_time"></div>
+
+        <canvas id="a_chart" height="120"></canvas>
+    </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
+const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
+
+function formatLocalTime(utcString) {
+    const date = new Date(utcString);
+
+    const options = {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    };
+
+    const parts = new Intl.DateTimeFormat("fr-FR", options)
+        .formatToParts(date);
+
+    const year = parts.find(p => p.type === "year").value;
+    const month = parts.find(p => p.type === "month").value;
+    const day = parts.find(p => p.type === "day").value;
+    const hour = parts.find(p => p.type === "hour").value;
+    const minute = parts.find(p => p.type === "minute").value;
+
+    return `${year}-${month}-${day} à ${hour}:${minute}`;
+}
+
+function updateStatus(badgeId, timestamp) {
+
+    const now = new Date();
+    const last = new Date(timestamp);
+    const diffMinutes = (now - last) / 1000 / 60;
+
+    const badge = document.getElementById(badgeId);
+
+    if (diffMinutes <= 2) {
+        badge.style.color = "#22c55e";
+    } else {
+        badge.style.color = "#ef4444";
+    }
+}
+
+async function fetchLatest(device) {
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&order=timestamp.desc&limit=1`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+    const data = await response.json();
+    return data[0];
+}
+
+async function fetchLast6Hours(device) {
+
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    return await response.json();
+}
+
+let mChart;
+let aChart;
+
+function createChart(canvasId, data, label) {
+
+    const ctx = document.getElementById(canvasId).getContext("2d");
+
+    const labels = data.map(d => {
+        const date = new Date(d.timestamp);
+        return date.toLocaleTimeString("fr-FR", {
+            timeZone: "Europe/Paris",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        });
+    });
+
+    const values = data.map(d => d.temperature);
+
+    return new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: values,
+                borderColor: "#3b82f6",
+                backgroundColor: "rgba(59,130,246,0.1)",
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#94a3b8",
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    }
+                },
+                y: {
+                    ticks: { color: "#94a3b8" }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: "#e2e8f0" }
+                }
+            }
+        }
+    });
+}
+
+async function refreshValues() {
+
+    const moke = await fetchLatest("arduino_mokescaner");
+    if (moke) {
+        document.getElementById("m_temp").textContent =
+            "Température : " + moke.temperature.toFixed(1) + " °C";
+        document.getElementById("m_hum").textContent =
+            "Humidité : " + moke.humidity + " %";
+        document.getElementById("m_press").textContent =
+            "Pression : " + moke.pressure + " hPa";
+        document.getElementById("m_time").textContent =
+            "Dernière mesure : " + formatLocalTime(moke.timestamp);
+
+        updateStatus("m_status", moke.timestamp);
+    }
+
+    const atelier = await fetchLatest("arduino_atelier");
+    if (atelier) {
+        document.getElementById("a_temp").textContent =
+            "Température : " + atelier.temperature.toFixed(1) + " °C";
+        document.getElementById("a_hum").textContent =
+            "Humidité : " + atelier.humidity + " %";
+        document.getElementById("a_press").textContent =
+            "Pression : " + atelier.pressure + " hPa";
+        document.getElementById("a_time").textContent =
+            "Dernière mesure : " + formatLocalTime(atelier.timestamp);
+
+        updateStatus("a_status", atelier.timestamp);
+    }
+}
+
+async function loadCharts() {
+
+    const mData = await fetchLast6Hours("arduino_mokescaner");
+    const aData = await fetchLast6Hours("arduino_atelier");
+
+    if (mChart) mChart.destroy();
+    if (aChart) aChart.destroy();
+
+    mChart = createChart("m_chart", mData, "Température Mokescaner");
+    aChart = createChart("a_chart", aData, "Température Atelier");
+}
+
+refreshValues();
+loadCharts();
+
+setInterval(refreshValues, 30000);
+setInterval(loadCharts, 300000);
+
+</script>
+
+</body>
+</html>
