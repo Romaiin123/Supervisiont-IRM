@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Supervision – Groupe Froid</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+h1 {
+    margin-bottom: 40px;
+}
+
+.indicator {
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    background: gray;
+    box-shadow: 0 0 40px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.on {
+    background: #22c55e;
+    box-shadow: 0 0 60px rgba(34,197,94,0.8);
+}
+
+.off {
+    background: #ef4444;
+    box-shadow: 0 0 60px rgba(239,68,68,0.8);
+}
+
+.status-text {
+    margin-top: 30px;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+.timestamp {
+    margin-top: 10px;
+    color: #64748b;
+}
+</style>
+</head>
+
+<body>
+
+<h1>État Groupe Froid</h1>
+
+<div id="voyant" class="indicator"></div>
+
+<div id="status" class="status-text">En attente...</div>
+<div id="time" class="timestamp"></div>
+
+<script>
+const voyant = document.getElementById("voyant");
+const statusText = document.getElementById("status");
+const timeText = document.getElementById("time");
+
+const ws = new WebSocket("ws://" + window.location.host + "/ws");
+
+ws.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+
+    if (data.device_id === "arduino_groupe_froid") {
+
+        if (data.etat_gf === 1) {
+            voyant.classList.remove("off");
+            voyant.classList.add("on");
+            statusText.innerText = "GROUPE FROID : ON";
+        } else {
+            voyant.classList.remove("on");
+            voyant.classList.add("off");
+            statusText.innerText = "GROUPE FROID : OFF";
+        }
+
+        if (data.timestamp) {
+            timeText.innerText = "Dernière mise à jour : " + data.timestamp;
+        }
+    }
+};
+</script>
+
+</body>
+</html>
