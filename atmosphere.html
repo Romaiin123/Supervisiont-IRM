@@ -10,7 +10,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.card { position: relative; }
+.card { 
+    position: relative; 
+}
 
 .status-badge {
     position: absolute;
@@ -33,30 +35,16 @@
 
 <div class="container">
 
-    <!-- Mokescaner -->
     <div class="card">
-        <h2>Arduino Mokescaner</h2>
-        <div id="m_status" class="status-badge">●</div>
+        <h2>Arduino Atmo</h2>
+        <div id="atmo_status" class="status-badge">●</div>
 
-        <div class="value" id="m_temp">Température : --</div>
-        <div class="value" id="m_hum">Humidité : --</div>
-        <div class="value" id="m_press">Pression : --</div>
-        <div class="timestamp" id="m_time"></div>
+        <div class="value" id="atmo_temp">Température : --</div>
+        <div class="value" id="atmo_hum">Humidité : --</div>
+        <div class="value" id="atmo_press">Pression : --</div>
+        <div class="timestamp" id="atmo_time"></div>
 
-        <canvas id="m_chart" height="120"></canvas>
-    </div>
-
-    <!-- Atelier -->
-    <div class="card">
-        <h2>Arduino Atelier</h2>
-        <div id="a_status" class="status-badge">●</div>
-
-        <div class="value" id="a_temp">Température : --</div>
-        <div class="value" id="a_hum">Humidité : --</div>
-        <div class="value" id="a_press">Pression : --</div>
-        <div class="timestamp" id="a_time"></div>
-
-        <canvas id="a_chart" height="120"></canvas>
+        <canvas id="atmo_chart" height="120"></canvas>
     </div>
 
 </div>
@@ -79,8 +67,7 @@ function formatLocalTime(utcString) {
         hour12: false
     };
 
-    const parts = new Intl.DateTimeFormat("fr-FR", options)
-        .formatToParts(date);
+    const parts = new Intl.DateTimeFormat("fr-FR", options).formatToParts(date);
 
     const year = parts.find(p => p.type === "year").value;
     const month = parts.find(p => p.type === "month").value;
@@ -92,7 +79,6 @@ function formatLocalTime(utcString) {
 }
 
 function updateStatus(badgeId, timestamp) {
-
     const now = new Date();
     const last = new Date(timestamp);
     const diffMinutes = (now - last) / 1000 / 60;
@@ -116,12 +102,12 @@ async function fetchLatest(device) {
             }
         }
     );
+
     const data = await response.json();
     return data[0];
 }
 
 async function fetchLast6Hours(device) {
-
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
 
     const response = await fetch(
@@ -137,11 +123,9 @@ async function fetchLast6Hours(device) {
     return await response.json();
 }
 
-let mChart;
-let aChart;
+let atmoChart;
 
 function createChart(canvasId, data, label) {
-
     const ctx = document.getElementById(canvasId).getContext("2d");
 
     const labels = data.map(d => {
@@ -193,53 +177,35 @@ function createChart(canvasId, data, label) {
 }
 
 async function refreshValues() {
+    const atmo = await fetchLatest("arduino_atmo");
 
-    const moke = await fetchLatest("arduino_mokescaner");
-    if (moke) {
-        document.getElementById("m_temp").textContent =
-            "Température : " + moke.temperature.toFixed(1) + " °C";
-        document.getElementById("m_hum").textContent =
-            "Humidité : " + moke.humidity + " %";
-        document.getElementById("m_press").textContent =
-            "Pression : " + moke.pressure + " hPa";
-        document.getElementById("m_time").textContent =
-            "Dernière mesure : " + formatLocalTime(moke.timestamp);
+    if (atmo) {
+        document.getElementById("atmo_temp").textContent =
+            "Température : " + atmo.temperature.toFixed(1) + " °C";
+        document.getElementById("atmo_hum").textContent =
+            "Humidité : " + atmo.humidity + " %";
+        document.getElementById("atmo_press").textContent =
+            "Pression : " + atmo.pressure + " hPa";
+        document.getElementById("atmo_time").textContent =
+            "Dernière mesure : " + formatLocalTime(atmo.timestamp);
 
-        updateStatus("m_status", moke.timestamp);
-    }
-
-    const atelier = await fetchLatest("arduino_atelier");
-    if (atelier) {
-        document.getElementById("a_temp").textContent =
-            "Température : " + atelier.temperature.toFixed(1) + " °C";
-        document.getElementById("a_hum").textContent =
-            "Humidité : " + atelier.humidity + " %";
-        document.getElementById("a_press").textContent =
-            "Pression : " + atelier.pressure + " hPa";
-        document.getElementById("a_time").textContent =
-            "Dernière mesure : " + formatLocalTime(atelier.timestamp);
-
-        updateStatus("a_status", atelier.timestamp);
+        updateStatus("atmo_status", atmo.timestamp);
     }
 }
 
-async function loadCharts() {
+async function loadChart() {
+    const atmoData = await fetchLast6Hours("arduino_atmo");
 
-    const mData = await fetchLast6Hours("arduino_mokescaner");
-    const aData = await fetchLast6Hours("arduino_atelier");
+    if (atmoChart) atmoChart.destroy();
 
-    if (mChart) mChart.destroy();
-    if (aChart) aChart.destroy();
-
-    mChart = createChart("m_chart", mData, "Température Mokescaner");
-    aChart = createChart("a_chart", aData, "Température Atelier");
+    atmoChart = createChart("atmo_chart", atmoData, "Température Arduino Atmo");
 }
 
 refreshValues();
-loadCharts();
+loadChart();
 
 setInterval(refreshValues, 30000);
-setInterval(loadCharts, 300000);
+setInterval(loadChart, 300000);
 
 </script>
 
