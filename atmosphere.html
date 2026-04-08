@@ -20,6 +20,10 @@
     right: 25px;
     font-size: 1.4rem;
 }
+
+canvas {
+    margin-top: 20px;
+}
 </style>
 </head>
 
@@ -45,6 +49,8 @@
         <div class="timestamp" id="atmo_time"></div>
 
         <canvas id="atmo_chart" height="120"></canvas>
+        <canvas id="atmo_hum_chart" height="120"></canvas>
+        <canvas id="atmo_press_chart" height="120"></canvas>
     </div>
 
 </div>
@@ -124,8 +130,10 @@ async function fetchLast6Hours(device) {
 }
 
 let atmoChart;
+let atmoHumChart;
+let atmoPressChart;
 
-function createChart(canvasId, data, label) {
+function createChart(canvasId, data, label, field, borderColor, backgroundColor) {
     const ctx = document.getElementById(canvasId).getContext("2d");
 
     const labels = data.map(d => {
@@ -138,7 +146,7 @@ function createChart(canvasId, data, label) {
         });
     });
 
-    const values = data.map(d => d.temperature);
+    const values = data.map(d => d[field]);
 
     return new Chart(ctx, {
         type: "line",
@@ -147,9 +155,10 @@ function createChart(canvasId, data, label) {
             datasets: [{
                 label: label,
                 data: values,
-                borderColor: "#3b82f6",
-                backgroundColor: "rgba(59,130,246,0.1)",
-                tension: 0.3
+                borderColor: borderColor,
+                backgroundColor: backgroundColor,
+                tension: 0.3,
+                fill: true
             }]
         },
         options: {
@@ -161,15 +170,25 @@ function createChart(canvasId, data, label) {
                         maxRotation: 0,
                         autoSkip: true,
                         maxTicksLimit: 8
+                    },
+                    grid: {
+                        color: "rgba(148, 163, 184, 0.15)"
                     }
                 },
                 y: {
-                    ticks: { color: "#94a3b8" }
+                    ticks: {
+                        color: "#94a3b8"
+                    },
+                    grid: {
+                        color: "rgba(148, 163, 184, 0.15)"
+                    }
                 }
             },
             plugins: {
                 legend: {
-                    labels: { color: "#e2e8f0" }
+                    labels: {
+                        color: "#e2e8f0"
+                    }
                 }
             }
         }
@@ -181,11 +200,11 @@ async function refreshValues() {
 
     if (atmo) {
         document.getElementById("atmo_temp").textContent =
-            "Température : " + atmo.temperature.toFixed(1) + " °C";
+            "Température : " + Number(atmo.temperature).toFixed(1) + " °C";
         document.getElementById("atmo_hum").textContent =
-            "Humidité : " + atmo.humidity + " %";
+            "Humidité : " + Number(atmo.humidity).toFixed(1) + " %";
         document.getElementById("atmo_press").textContent =
-            "Pression : " + atmo.pressure + " hPa";
+            "Pression : " + Number(atmo.pressure).toFixed(1) + " hPa";
         document.getElementById("atmo_time").textContent =
             "Dernière mesure : " + formatLocalTime(atmo.timestamp);
 
@@ -197,8 +216,35 @@ async function loadChart() {
     const atmoData = await fetchLast6Hours("arduino_atmo");
 
     if (atmoChart) atmoChart.destroy();
+    if (atmoHumChart) atmoHumChart.destroy();
+    if (atmoPressChart) atmoPressChart.destroy();
 
-    atmoChart = createChart("atmo_chart", atmoData, "Température Arduino Atmo");
+    atmoChart = createChart(
+        "atmo_chart",
+        atmoData,
+        "Température (°C)",
+        "temperature",
+        "#3b82f6",
+        "rgba(59,130,246,0.1)"
+    );
+
+    atmoHumChart = createChart(
+        "atmo_hum_chart",
+        atmoData,
+        "Humidité (%)",
+        "humidity",
+        "#22c55e",
+        "rgba(34,197,94,0.1)"
+    );
+
+    atmoPressChart = createChart(
+        "atmo_press_chart",
+        atmoData,
+        "Pression (hPa)",
+        "pressure",
+        "#ef4444",
+        "rgba(239,68,68,0.1)"
+    );
 }
 
 refreshValues();
