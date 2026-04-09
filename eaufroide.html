@@ -7,16 +7,49 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
 
 <style>
-.card { position: relative; }
+.card {
+    position: relative;
+}
 
 .status-badge {
     position: absolute;
     top: 20px;
     right: 25px;
     font-size: 1.4rem;
+}
+
+.chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 18px 0 10px 0;
+}
+
+.chart-controls button {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.95rem;
+}
+
+.chart-controls button:hover {
+    background: #334155;
+}
+
+.info-note {
+    margin-top: 8px;
+    color: #94a3b8;
+    font-size: 0.92rem;
 }
 </style>
 </head>
@@ -40,15 +73,29 @@
         <div class="value" id="water_temp">-- °C</div>
         <div class="timestamp" id="water_time"></div>
 
+        <div class="chart-controls">
+            <button onclick="setAutoYScale()">Amplitude auto</button>
+            <button onclick="setPresetYScale(9, 13)">Vue large</button>
+            <button onclick="tightenYScale(0.5)">Zoom Y +</button>
+            <button onclick="expandYScale(0.5)">Zoom Y -</button>
+            <button onclick="resetZoom()">Réinitialiser zoom</button>
+        </div>
+
+        <div class="info-note">
+            Molette = zoom, clic-glissé = déplacement, sélection = zoom sur zone
+        </div>
+
         <canvas id="water_chart" height="120"></canvas>
     </div>
 
 </div>
 
 <script>
-
 const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
 const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
+
+let waterChart;
+let currentData = [];
 
 function formatLocalTime(utcString) {
     const date = new Date(utcString);
@@ -63,8 +110,7 @@ function formatLocalTime(utcString) {
         hour12: false
     };
 
-    const parts = new Intl.DateTimeFormat("fr-FR", options)
-        .formatToParts(date);
+    const parts = new Intl.DateTimeFormat("fr-FR", options).formatToParts(date);
 
     const year = parts.find(p => p.type === "year").value;
     const month = parts.find(p => p.type === "month").value;
@@ -120,10 +166,26 @@ async function fetchLast6Hours(device) {
     return await response.json();
 }
 
-let waterChart;
+function getSuggestedYBounds(values, padding = 0.2) {
+    if (!values || values.length === 0) {
+        return { min: 0, max: 20 };
+    }
+
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+
+    let min = Math.floor((minVal - padding) * 10) / 10;
+    let max = Math.ceil((maxVal + padding) * 10) / 10;
+
+    if (min === max) {
+        min -= 0.5;
+        max += 0.5;
+    }
+
+    return { min, max };
+}
 
 function createChart(data) {
-
     const ctx = document.getElementById("water_chart").getContext("2d");
 
     const labels = data.map(d => {
@@ -137,6 +199,7 @@ function createChart(data) {
     });
 
     const values = data.map(d => d.temperature);
+    const bounds = getSuggestedYBounds(values, 0.25);
 
     return new Chart(ctx, {
         type: "line",
@@ -146,36 +209,129 @@ function createChart(data) {
                 label: "Température eau glacée",
                 data: values,
                 borderColor: "#3b82f6",
-                backgroundColor: "rgba(59,130,246,0.1)",
-                tension: 0.3
+                backgroundColor: "rgba(59,130,246,0.10)",
+                tension: 0.25,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                fill: false
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: "nearest",
+                intersect: false
+            },
             scales: {
                 x: {
                     ticks: {
                         color: "#94a3b8",
                         maxRotation: 0,
                         autoSkip: true,
-                        maxTicksLimit: 8
+                        maxTicksLimit: 10
+                    },
+                    grid: {
+                        color: "rgba(148,163,184,0.08)"
                     }
                 },
                 y: {
-                    min: 6,
-                    max: 12,
+                    min: bounds.min,
+                    max: bounds.max,
                     ticks: {
                         color: "#94a3b8"
+                    },
+                    grid: {
+                        color: "rgba(148,163,184,0.08)"
                     }
                 }
             },
             plugins: {
                 legend: {
-                    labels: { color: "#e2e8f0" }
+                    labels: {
+                        color: "#e2e8f0"
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: "xy"
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        drag: {
+                            enabled: true,
+                            borderColor: "#60a5fa",
+                            borderWidth: 1,
+                            backgroundColor: "rgba(96,165,250,0.15)"
+                        },
+                        mode: "xy"
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` ${context.dataset.label} : ${context.parsed.y.toFixed(2)} °C`;
+                        }
+                    }
                 }
             }
         }
     });
+}
+
+function setAutoYScale() {
+    if (!waterChart || currentData.length === 0) return;
+
+    const values = currentData.map(d => d.temperature);
+    const bounds = getSuggestedYBounds(values, 0.25);
+
+    waterChart.options.scales.y.min = bounds.min;
+    waterChart.options.scales.y.max = bounds.max;
+    waterChart.update();
+}
+
+function setPresetYScale(min, max) {
+    if (!waterChart) return;
+
+    waterChart.options.scales.y.min = min;
+    waterChart.options.scales.y.max = max;
+    waterChart.update();
+}
+
+function tightenYScale(step = 0.5) {
+    if (!waterChart) return;
+
+    let min = waterChart.options.scales.y.min;
+    let max = waterChart.options.scales.y.max;
+
+    if ((max - min) <= 0.6) return;
+
+    waterChart.options.scales.y.min = min + step / 2;
+    waterChart.options.scales.y.max = max - step / 2;
+    waterChart.update();
+}
+
+function expandYScale(step = 0.5) {
+    if (!waterChart) return;
+
+    let min = waterChart.options.scales.y.min;
+    let max = waterChart.options.scales.y.max;
+
+    waterChart.options.scales.y.min = min - step / 2;
+    waterChart.options.scales.y.max = max + step / 2;
+    waterChart.update();
+}
+
+function resetZoom() {
+    if (!waterChart) return;
+    waterChart.resetZoom();
+    setAutoYScale();
 }
 
 async function refreshValues() {
@@ -194,8 +350,11 @@ async function refreshValues() {
 
 async function loadChart() {
     const data = await fetchLast6Hours("arduino_ntc_01");
+    currentData = data;
 
-    if (waterChart) waterChart.destroy();
+    if (waterChart) {
+        waterChart.destroy();
+    }
 
     waterChart = createChart(data);
 }
@@ -205,7 +364,6 @@ loadChart();
 
 setInterval(refreshValues, 30000);
 setInterval(loadChart, 60000);
-
 </script>
 
 </body>
