@@ -74,15 +74,14 @@
         <div class="timestamp" id="water_time"></div>
 
         <div class="chart-controls">
+            <button onclick="zoomIn()">Zoom +</button>
+            <button onclick="zoomOut()">Zoom -</button>
             <button onclick="setAutoYScale()">Amplitude auto</button>
-            <button onclick="setPresetYScale(9, 13)">Vue large</button>
-            <button onclick="tightenYScale(0.5)">Zoom Y +</button>
-            <button onclick="expandYScale(0.5)">Zoom Y -</button>
             <button onclick="resetZoom()">Réinitialiser zoom</button>
         </div>
 
         <div class="info-note">
-            Molette = zoom, clic-glissé = déplacement, sélection = zoom sur zone
+            Clic maintenu + déplacement = navigation dans le graphe
         </div>
 
         <canvas id="water_chart" height="120"></canvas>
@@ -166,7 +165,7 @@ async function fetchLast6Hours(device) {
     return await response.json();
 }
 
-function getSuggestedYBounds(values, padding = 0.2) {
+function getSuggestedYBounds(values, padding = 0.25) {
     if (!values || values.length === 0) {
         return { min: 0, max: 20 };
     }
@@ -259,16 +258,13 @@ function createChart(data) {
                     },
                     zoom: {
                         wheel: {
-                            enabled: true
+                            enabled: false
                         },
                         pinch: {
-                            enabled: true
+                            enabled: false
                         },
                         drag: {
-                            enabled: true,
-                            borderColor: "#60a5fa",
-                            borderWidth: 1,
-                            backgroundColor: "rgba(96,165,250,0.15)"
+                            enabled: false
                         },
                         mode: "xy"
                     }
@@ -296,36 +292,14 @@ function setAutoYScale() {
     waterChart.update();
 }
 
-function setPresetYScale(min, max) {
+function zoomIn() {
     if (!waterChart) return;
-
-    waterChart.options.scales.y.min = min;
-    waterChart.options.scales.y.max = max;
-    waterChart.update();
+    waterChart.zoom(1.2);
 }
 
-function tightenYScale(step = 0.5) {
+function zoomOut() {
     if (!waterChart) return;
-
-    let min = waterChart.options.scales.y.min;
-    let max = waterChart.options.scales.y.max;
-
-    if ((max - min) <= 0.6) return;
-
-    waterChart.options.scales.y.min = min + step / 2;
-    waterChart.options.scales.y.max = max - step / 2;
-    waterChart.update();
-}
-
-function expandYScale(step = 0.5) {
-    if (!waterChart) return;
-
-    let min = waterChart.options.scales.y.min;
-    let max = waterChart.options.scales.y.max;
-
-    waterChart.options.scales.y.min = min - step / 2;
-    waterChart.options.scales.y.max = max + step / 2;
-    waterChart.update();
+    waterChart.zoom(0.8);
 }
 
 function resetZoom() {
