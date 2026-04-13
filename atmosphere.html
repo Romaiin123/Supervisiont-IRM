@@ -148,7 +148,7 @@ async function fetchRange(device, hours) {
     const startDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
     const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${startDate}&order=timestamp.asc`,
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${startDate}&order=timestamp.asc&limit=6000`,
         {
             headers: {
                 "apikey": SUPABASE_KEY,
