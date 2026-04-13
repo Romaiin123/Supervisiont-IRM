@@ -31,7 +31,8 @@
     margin: 18px 0 10px 0;
 }
 
-.chart-controls button {
+.chart-controls button,
+.chart-controls select {
     background: #1e293b;
     color: #e2e8f0;
     border: 1px solid #334155;
@@ -42,7 +43,8 @@
     font-size: 0.95rem;
 }
 
-.chart-controls button:hover {
+.chart-controls button:hover,
+.chart-controls select:hover {
     background: #334155;
 }
 
@@ -74,6 +76,12 @@
         <div class="timestamp" id="water_time"></div>
 
         <div class="chart-controls">
+            <select id="time_range_select">
+                <option value="24">24 h</option>
+                <option value="48">48 h</option>
+                <option value="72">3 jours</option>
+                <option value="96">4 jours</option>
+            </select>
             <button onclick="zoomIn()">Zoom +</button>
             <button onclick="zoomOut()">Zoom -</button>
             <button onclick="setAutoYScale()">Amplitude auto</button>
@@ -95,6 +103,7 @@ const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
 
 let waterChart;
 let currentData = [];
+let currentRangeHours = 24;
 
 function formatLocalTime(utcString) {
     const date = new Date(utcString);
@@ -149,11 +158,11 @@ async function fetchLatest(device) {
     return data[0];
 }
 
-async function fetchLast6Hours(device) {
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+async function fetchRange(device, hours) {
+    const startDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
     const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${startDate}&order=timestamp.asc&limit=6000`,
         {
             headers: {
                 "apikey": SUPABASE_KEY,
@@ -163,6 +172,21 @@ async function fetchLast6Hours(device) {
     );
 
     return await response.json();
+}
+
+function buildLabels(data, hours) {
+    return data.map(d => {
+        const date = new Date(d.timestamp);
+
+        return date.toLocaleString("fr-FR", {
+            timeZone: "Europe/Paris",
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        });
+    });
 }
 
 function getSuggestedYBounds(values, padding = 0.25) {
@@ -184,19 +208,10 @@ function getSuggestedYBounds(values, padding = 0.25) {
     return { min, max };
 }
 
-function createChart(data) {
+function createChart(data, hours) {
     const ctx = document.getElementById("water_chart").getContext("2d");
 
-    const labels = data.map(d => {
-        const date = new Date(d.timestamp);
-        return date.toLocaleTimeString("fr-FR", {
-            timeZone: "Europe/Paris",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        });
-    });
-
+    const labels = buildLabels(data, hours);
     const values = data.map(d => d.temperature);
     const bounds = getSuggestedYBounds(values, 0.25);
 
@@ -323,21 +338,30 @@ async function refreshValues() {
 }
 
 async function loadChart() {
-    const data = await fetchLast6Hours("arduino_ntc_01");
+    const data = await fetchRange("arduino_ntc_01", currentRangeHours);
     currentData = data;
 
     if (waterChart) {
         waterChart.destroy();
     }
 
-    waterChart = createChart(data);
+    waterChart = createChart(data, currentRangeHours);
 }
+
+document.getElementById("time_range_select").addEventListener("change", async function () {
+    currentRangeHours = Number(this.value);
+    await loadChart();
+});
 
 refreshValues();
 loadChart();
 
 setInterval(refreshValues, 30000);
-setInterval(loadChart, 60000);
+setInterval(async () => {
+    if (currentRangeHours === 24) {
+        await loadChart();
+    }
+}, 60000);
 </script>
 
 </body>
