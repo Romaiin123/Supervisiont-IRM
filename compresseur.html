@@ -10,13 +10,42 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-.card { position: relative; }
+.card { 
+    position: relative; 
+}
 
 .status-badge {
     position: absolute;
     top: 20px;
     right: 25px;
     font-size: 1.4rem;
+}
+
+.state-indicator {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin: 20px auto 10px auto;
+    background-color: #64748b;
+    box-shadow: 0 0 12px rgba(100,116,139,0.4);
+    transition: all 0.3s ease;
+}
+
+.state-indicator.on {
+    background-color: #22c55e;
+    box-shadow: 0 0 18px rgba(34,197,94,0.7);
+}
+
+.state-indicator.off {
+    background-color: #ef4444;
+    box-shadow: 0 0 18px rgba(239,68,68,0.7);
+}
+
+.state-text {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -43,6 +72,15 @@
         <canvas id="comp_chart" height="120"></canvas>
     </div>
 
+    <div class="card">
+        <h2>État compresseur</h2>
+        <div id="etat_status" class="status-badge">●</div>
+
+        <div id="etat_indicator" class="state-indicator"></div>
+        <div class="state-text" id="etat_text">--</div>
+        <div class="timestamp" id="etat_time"></div>
+    </div>
+
 </div>
 
 <script>
@@ -53,7 +91,6 @@ const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
 /* ===== FORMAT IDENTIQUE ===== */
 
 function formatLocalTime(utcString) {
-
     const date = new Date(utcString);
 
     const options = {
@@ -81,7 +118,6 @@ function formatLocalTime(utcString) {
 /* ===== BADGE ===== */
 
 function updateStatus(badgeId, timestamp) {
-
     const now = new Date();
     const last = new Date(timestamp);
     const diffMinutes = (now - last) / 1000 / 60;
@@ -113,7 +149,6 @@ async function fetchLatest(device) {
 }
 
 async function fetchLast6Hours(device) {
-
     const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
 
     const response = await fetch(
@@ -134,7 +169,6 @@ async function fetchLast6Hours(device) {
 let compChart;
 
 function createChart(data) {
-
     const ctx = document.getElementById("comp_chart").getContext("2d");
 
     const labels = data.map(d => {
@@ -185,14 +219,35 @@ function createChart(data) {
     });
 }
 
+/* ===== AFFICHAGE ETAT ===== */
+
+function updateEtatCompresseur(value, timestamp) {
+    const indicator = document.getElementById("etat_indicator");
+    const text = document.getElementById("etat_text");
+    const time = document.getElementById("etat_time");
+
+    indicator.classList.remove("on", "off");
+
+    if (Number(value) === 1) {
+        indicator.classList.add("on");
+        text.textContent = "Compresseur ON";
+    } else {
+        indicator.classList.add("off");
+        text.textContent = "Compresseur OFF";
+    }
+
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("etat_status", timestamp);
+}
+
 /* ===== REFRESH ===== */
 
 async function refreshValues() {
-
     const comp = await fetchLatest("arduino_ntc_01");
 
-    if (comp && comp.amplitude !== null) {
+    if (!comp) return;
 
+    if (comp.amplitude !== null && comp.amplitude !== undefined) {
         document.getElementById("comp_amp").textContent =
             comp.amplitude.toFixed(2);
 
@@ -201,10 +256,13 @@ async function refreshValues() {
 
         updateStatus("comp_status", comp.timestamp);
     }
+
+    if (comp.comptfetat !== null && comp.comptfetat !== undefined) {
+        updateEtatCompresseur(comp.comptfetat, comp.timestamp);
+    }
 }
 
 async function loadChart() {
-
     const data = await fetchLast6Hours("arduino_ntc_01");
 
     if (compChart) compChart.destroy();
