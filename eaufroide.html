@@ -6,7 +6,7 @@
 <title>Données eau froide</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=final">
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
@@ -33,7 +33,7 @@
 
 .chart-controls button {
     background: #1e293b;
-    color: #e2e8f0;
+    color: #334155;
     border: 1px solid #334155;
     border-radius: 8px;
     padding: 8px 12px;
@@ -337,5 +337,32 @@ setInterval(refreshValues, 30000);
 setInterval(loadChart, 60000);
 </script>
 
-<script>function toggleMenu(){const s=document.getElementById("sidebar");const o=document.getElementById("overlay");if(!s||!o)return;s.classList.toggle("active");o.classList.toggle("active");}function closeMenu(){const s=document.getElementById("sidebar");const o=document.getElementById("overlay");if(!s||!o)return;s.classList.remove("active");o.classList.remove("active");}document.querySelectorAll(".sidebar-menu a").forEach(a=>a.addEventListener("click",()=>{if(window.innerWidth<=720)closeMenu();}));</script></body>
+<script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main-content");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !main || !overlay) return;
+    if (window.innerWidth <= 720) {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    } else {
+        sidebar.classList.toggle("closed");
+        main.classList.toggle("full");
+    }
+}
+function closeMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+document.querySelectorAll(".sidebar-menu a").forEach(a => {
+    a.addEventListener("click", () => {
+        if (window.innerWidth <= 720) closeMenu();
+    });
+});
+</script>
+</body>
 </html>
