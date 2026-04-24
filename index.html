@@ -1,198 +1,78 @@
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centre IRM – Supervision</title>
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=final">
 </head>
-
 <body>
-
-    <!-- ===== MENU MOBILE ===== -->
-    <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleMenu()">
-        ☰
-    </button>
-
-    <!-- Overlay -->
+    <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleMenu()">☰</button>
     <div id="overlay" onclick="closeMenu()"></div>
-
     <div class="app-shell">
-
-        <!-- ===== SIDEBAR ===== -->
         <aside id="sidebar" class="sidebar">
-
-            <div class="sidebar-brand">
-                <img src="Logo_IRM.png" alt="Logo IRM">
-                <span>IRM Supervision</span>
-            </div>
-
-            <!-- SECTION MONITORING -->
+            <div class="sidebar-brand"><img src="Logo_IRM.png" alt="Logo IRM"><span>IRM Supervision</span></div>
             <div class="sidebar-section">
-                <div class="sidebar-title">
-                    <span>Monitoring</span>
-                    <span>⌄</span>
-                </div>
-
+                <div class="sidebar-title"><span>Monitoring</span><span>⌄</span></div>
                 <nav class="sidebar-menu">
-                    <a href="index.html" data-page="index">
-                        <span class="dot"></span>
-                        <span class="label-text">Vue générale</span>
-                    </a>
-
-                    <a href="atmosphere.html" data-page="atmosphere">
-                        <span class="dot"></span>
-                        <span class="label-text">Atmosphère</span>
-                    </a>
-
-                    <a href="eaufroide.html" data-page="eaufroide">
-                        <span class="dot"></span>
-                        <span class="label-text">Eau glacée</span>
-                    </a>
-
-                    <a href="compresseur.html" data-page="compresseur">
-                        <span class="dot"></span>
-                        <span class="label-text">Compresseur</span>
-                    </a>
-
-                    <a href="groupefroid.html" data-page="groupefroid">
-                        <span class="dot"></span>
-                        <span class="label-text">Groupe froid</span>
-                    </a>
+                    <a href="index.html" data-page="index"><span class="dot"></span><span class="label-text">Vue générale</span></a>
+                    <a href="atmosphere.html" data-page="atmosphere"><span class="dot"></span><span class="label-text">Atmosphère</span></a>
+                    <a href="eaufroide.html" data-page="eaufroide"><span class="dot"></span><span class="label-text">Eau glacée</span></a>
+                    <a href="compresseur.html" data-page="compresseur"><span class="dot"></span><span class="label-text">Compresseur</span></a>
+                    <a href="groupefroid.html" data-page="groupefroid"><span class="dot"></span><span class="label-text">Groupe froid</span></a>
                 </nav>
             </div>
-
-            <!-- SECTION SYSTEME -->
             <div class="sidebar-section">
-                <div class="sidebar-title">
-                    <span>Système</span>
-                    <span>⌄</span>
-                </div>
-
+                <div class="sidebar-title"><span>Système</span><span>⌄</span></div>
                 <nav class="sidebar-menu">
-                    <a href="#">
-                        <span class="dot"></span>
-                        <span class="label-text">Alertes</span>
-                    </a>
-
-                    <a href="#">
-                        <span class="dot"></span>
-                        <span class="label-text">Datalogging</span>
-                    </a>
-
-                    <a href="#">
-                        <span class="dot"></span>
-                        <span class="label-text">Paramètres</span>
-                    </a>
+                    <a href="#"><span class="dot"></span><span class="label-text">Alertes</span></a>
+                    <a href="#"><span class="dot"></span><span class="label-text">Datalogging</span></a>
+                    <a href="#"><span class="dot"></span><span class="label-text">Paramètres</span></a>
                 </nav>
             </div>
-
-            <!-- FOOTER SIDEBAR -->
-            <div class="sidebar-footer">
-                Plateforme IRM – INT<br>
-                Consultation distante
-            </div>
-
+            <div class="sidebar-footer">Plateforme IRM – INT<br>Consultation distante</div>
         </aside>
-
-        <!-- ===== CONTENU PRINCIPAL ===== -->
         <main class="main-content">
-
-            <!-- TOPBAR -->
             <div class="topbar">
-                <div>
-                    <h1 class="page-title">Supervision IRM</h1>
-                    <div class="page-subtitle">Vue générale des modules de surveillance</div>
-                </div>
-
-                <div class="topbar-actions">
-                    <span class="badge-soft">Supabase REST</span>
-                    <span class="badge-soft">Lecture seule</span>
-                </div>
+                <div><h1 class="page-title">Supervision IRM</h1><div class="page-subtitle">Vue générale des modules de surveillance</div></div>
+                <div class="topbar-actions"><span class="badge-soft">Supabase REST</span><span class="badge-soft">Lecture seule</span></div>
             </div>
-
-            <!-- DASHBOARD -->
-            <div class="container">
-                <div class="dashboard-grid">
-
-                    <a href="atmosphere.html" class="card module-card">
-                        <div>
-                            <div class="label">Données atmosphériques</div>
-                            <div class="metric">Atmo</div>
-                            <p>Température – humidité – pression</p>
-                        </div>
-                        <div class="open">View details</div>
-                    </a>
-
-                    <a href="eaufroide.html" class="card module-card">
-                        <div>
-                            <div class="label">Circuit eau glacée</div>
-                            <div class="metric">NTC</div>
-                            <p>Température du circuit de refroidissement</p>
-                        </div>
-                        <div class="open">View details</div>
-                    </a>
-
-                    <a href="compresseur.html" class="card module-card">
-                        <div>
-                            <div class="label">Compresseur</div>
-                            <div class="metric">Vib.</div>
-                            <p>Amplitude vibratoire et état compresseur</p>
-                        </div>
-                        <div class="open">View details</div>
-                    </a>
-
-                    <a href="groupefroid.html" class="card module-card">
-                        <div>
-                            <div class="label">Groupe froid</div>
-                            <div class="metric">ON/OFF</div>
-                            <p>Surveillance de l’état de fonctionnement</p>
-                        </div>
-                        <div class="open">View details</div>
-                    </a>
-
-                </div>
-            </div>
-
+            <div class="container"><div class="dashboard-grid">
+                <a href="atmosphere.html" class="card module-card"><div><div class="label">Données atmosphériques</div><div class="metric">Atmo</div><p>Température – humidité – pression</p></div><div class="open">View details</div></a>
+                <a href="eaufroide.html" class="card module-card"><div><div class="label">Circuit eau glacée</div><div class="metric">NTC</div><p>Température du circuit de refroidissement</p></div><div class="open">View details</div></a>
+                <a href="compresseur.html" class="card module-card"><div><div class="label">Compresseur</div><div class="metric">Vib.</div><p>Amplitude vibratoire et état compresseur</p></div><div class="open">View details</div></a>
+                <a href="groupefroid.html" class="card module-card"><div><div class="label">Groupe froid</div><div class="metric">ON/OFF</div><p>Surveillance de l’état de fonctionnement</p></div><div class="open">View details</div></a>
+            </div></div>
         </main>
-
     </div>
-
-    <!-- ===== JS ===== -->
-    <script>
-        // Page active
-        document.querySelector('[data-page="index"]').classList.add('active');
-
-        // Toggle menu
-        function toggleMenu() {
-            const s = document.getElementById("sidebar");
-            const o = document.getElementById("overlay");
-            if (!s || !o) return;
-
-            s.classList.toggle("active");
-            o.classList.toggle("active");
-        }
-
-        // Close menu
-        function closeMenu() {
-            const s = document.getElementById("sidebar");
-            const o = document.getElementById("overlay");
-            if (!s || !o) return;
-
-            s.classList.remove("active");
-            o.classList.remove("active");
-        }
-
-        // Auto close on mobile click
-        document.querySelectorAll(".sidebar-menu a").forEach(a => {
-            a.addEventListener("click", () => {
-                if (window.innerWidth <= 720) closeMenu();
-            });
-        });
-    </script>
-
+    <script>document.querySelector('[data-page="index"]').classList.add('active');</script>
+<script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main-content");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !main || !overlay) return;
+    if (window.innerWidth <= 720) {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    } else {
+        sidebar.classList.toggle("closed");
+        main.classList.toggle("full");
+    }
+}
+function closeMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+document.querySelectorAll(".sidebar-menu a").forEach(a => {
+    a.addEventListener("click", () => {
+        if (window.innerWidth <= 720) closeMenu();
+    });
+});
+</script>
 </body>
 </html>
