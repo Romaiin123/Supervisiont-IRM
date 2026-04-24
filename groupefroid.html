@@ -6,7 +6,7 @@
 <title>Données Groupe Froid</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=final">
 
 <style>
 .card { position: relative; text-align: center; }
@@ -145,5 +145,32 @@ setInterval(refresh, 30000);
 
 </script>
 
-<script>function toggleMenu(){const s=document.getElementById("sidebar");const o=document.getElementById("overlay");if(!s||!o)return;s.classList.toggle("active");o.classList.toggle("active");}function closeMenu(){const s=document.getElementById("sidebar");const o=document.getElementById("overlay");if(!s||!o)return;s.classList.remove("active");o.classList.remove("active");}document.querySelectorAll(".sidebar-menu a").forEach(a=>a.addEventListener("click",()=>{if(window.innerWidth<=720)closeMenu();}));</script></body>
+<script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main-content");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !main || !overlay) return;
+    if (window.innerWidth <= 720) {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    } else {
+        sidebar.classList.toggle("closed");
+        main.classList.toggle("full");
+    }
+}
+function closeMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+document.querySelectorAll(".sidebar-menu a").forEach(a => {
+    a.addEventListener("click", () => {
+        if (window.innerWidth <= 720) closeMenu();
+    });
+});
+</script>
+</body>
 </html>
