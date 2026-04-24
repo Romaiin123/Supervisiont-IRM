@@ -51,6 +51,7 @@ a { color: inherit; }
 .sidebar.closed { left: calc(-1 * var(--sidebar-width)); }
 
 .sidebar-brand {
+    margin-left: 80px;
     height: 92px;
     background: #ffea00;
     color: #111827;
