@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Données Groupe Froid</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<style>
+.card { position: relative; text-align: center; }
+
+.status-badge {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    font-size: 1.4rem;
+}
+
+.voyant {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    margin: 40px auto;
+    background: gray;
+    transition: all 0.3s ease;
+}
+
+.on {
+    background: #22c55e;
+    box-shadow: 0 0 40px rgba(34,197,94,0.8);
+}
+
+.off {
+    background: #ef4444;
+    box-shadow: 0 0 40px rgba(239,68,68,0.8);
+}
+
+.state-text {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="app-shell"><aside class="sidebar"><div class="sidebar-brand"><img src="Logo_IRM.png" alt="Logo IRM"><span>IRM Supervision</span></div><div class="sidebar-section"><div class="sidebar-title"><span>Monitoring</span><span>⌄</span></div><nav class="sidebar-menu"><a href="index.html" data-page="index"><span class="dot"></span><span class="label-text">Vue générale</span></a><a href="atmosphere.html" data-page="atmosphere"><span class="dot"></span><span class="label-text">Atmosphère</span></a><a href="eaufroide.html" data-page="eaufroide"><span class="dot"></span><span class="label-text">Eau glacée</span></a><a href="compresseur.html" data-page="compresseur"><span class="dot"></span><span class="label-text">Compresseur</span></a><a href="groupefroid.html" data-page="groupefroid"><span class="dot"></span><span class="label-text">Groupe froid</span></a></nav></div><div class="sidebar-section"><div class="sidebar-title"><span>Système</span><span>⌄</span></div><nav class="sidebar-menu"><a href="#"><span class="dot"></span><span class="label-text">Alertes</span></a><a href="#"><span class="dot"></span><span class="label-text">Datalogging</span></a><a href="#"><span class="dot"></span><span class="label-text">Paramètres</span></a></nav></div><div class="sidebar-footer">Plateforme IRM – INT<br>Consultation distante</div></aside><main class="main-content">
+<div class="topbar"><div><h1 class="page-title">Données groupe froid</h1><div class="page-subtitle">État ON/OFF du groupe froid</div></div><div class="topbar-actions"><span class="badge-soft">Supabase REST</span><span class="badge-soft">Lecture seule</span></div></div>
+<div class="container">
+
+    <div class="card">
+        <h2>Arduino Groupe Froid</h2>
+        <div id="gf_status" class="status-badge">●</div>
+
+        <div id="voyant" class="voyant"></div>
+
+        <div id="gf_state" class="state-text">État : --</div>
+        <div class="timestamp" id="gf_time"></div>
+    </div>
+
+</div>
+
+</main>
+</div>
+<script>document.querySelector('[data-page="groupefroid"]').classList.add('active');</script>
+
+<script>
+
+const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
+const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
+
+function formatLocalTime(utcString) {
+    const date = new Date(utcString);
+
+    return date.toLocaleString("fr-FR", {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    });
+}
+
+function updateStatus(badgeId, timestamp) {
+
+    const now = new Date();
+    const last = new Date(timestamp);
+    const diffMinutes = (now - last) / 1000 / 60;
+
+    const badge = document.getElementById(badgeId);
+
+    if (diffMinutes <= 2) {
+        badge.style.color = "#22c55e";
+    } else {
+        badge.style.color = "#ef4444";
+    }
+}
+
+async function fetchLatest() {
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.arduino_groupe_froid&order=timestamp.desc&limit=1`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    const data = await response.json();
+    return data[0];
+}
+
+async function refresh() {
+
+    const data = await fetchLatest();
+    if (!data) return;
+
+    const voyant = document.getElementById("voyant");
+    const stateText = document.getElementById("gf_state");
+
+    if (data.etat_gf === 1) {
+        voyant.classList.remove("off");
+        voyant.classList.add("on");
+        stateText.textContent = "État : ON";
+    } else {
+        voyant.classList.remove("on");
+        voyant.classList.add("off");
+        stateText.textContent = "État : OFF";
+    }
+
+    document.getElementById("gf_time").textContent =
+        "Dernière mesure : " + formatLocalTime(data.timestamp);
+
+    updateStatus("gf_status", data.timestamp);
+}
+
+refresh();
+setInterval(refresh, 30000);
+
+</script>
+
+</body>
+</html>
