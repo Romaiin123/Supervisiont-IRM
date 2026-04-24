@@ -351,6 +351,16 @@ canvas {
     z-index: 1300;
     cursor: pointer;
     box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
+
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.menu-toggle:focus,
+.menu-toggle:active,
+.menu-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
 }
 
 /* ===== OVERLAY MOBILE ===== */
