@@ -51,17 +51,17 @@ a { color: inherit; }
 .sidebar.closed { left: calc(-1 * var(--sidebar-width)); }
 
 .sidebar-brand {
-    margin-left: 80px;
     height: 92px;
     background: #ffea00;
     color: #111827;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0 24px 0 110px;
+    justify-content: space-between;
+
+    padding-left: 90px; 
+
+    padding-right: 20px;
     font-weight: 800;
-    letter-spacing: 0.02em;
-    flex-shrink: 0;
 }
 
 .sidebar-brand img {
