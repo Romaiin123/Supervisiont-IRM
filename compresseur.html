@@ -68,15 +68,8 @@
 </head>
 
 <body>
-
-<header>
-    Données Compresseur
-</header>
-
-<div class="nav">
-    <a href="index.html" class="back-button">← Retour à l’accueil</a>
-</div>
-
+<div class="app-shell"><aside class="sidebar"><div class="sidebar-brand"><img src="Logo_IRM.png" alt="Logo IRM"><span>IRM Supervision</span></div><div class="sidebar-section"><div class="sidebar-title"><span>Monitoring</span><span>⌄</span></div><nav class="sidebar-menu"><a href="index.html" data-page="index"><span class="dot"></span><span class="label-text">Vue générale</span></a><a href="atmosphere.html" data-page="atmosphere"><span class="dot"></span><span class="label-text">Atmosphère</span></a><a href="eaufroide.html" data-page="eaufroide"><span class="dot"></span><span class="label-text">Eau glacée</span></a><a href="compresseur.html" data-page="compresseur"><span class="dot"></span><span class="label-text">Compresseur</span></a><a href="groupefroid.html" data-page="groupefroid"><span class="dot"></span><span class="label-text">Groupe froid</span></a></nav></div><div class="sidebar-section"><div class="sidebar-title"><span>Système</span><span>⌄</span></div><nav class="sidebar-menu"><a href="#"><span class="dot"></span><span class="label-text">Alertes</span></a><a href="#"><span class="dot"></span><span class="label-text">Datalogging</span></a><a href="#"><span class="dot"></span><span class="label-text">Paramètres</span></a></nav></div><div class="sidebar-footer">Plateforme IRM – INT<br>Consultation distante</div></aside><main class="main-content">
+<div class="topbar"><div><h1 class="page-title">Données compresseur</h1><div class="page-subtitle">Vibration, état et commande compresseur</div></div><div class="topbar-actions"><span class="badge-soft">Supabase REST</span><span class="badge-soft">Lecture seule</span></div></div>
 <div class="container">
 
     <div class="card">
@@ -110,6 +103,10 @@
     </div>
 
 </div>
+
+</main>
+</div>
+<script>document.querySelector('[data-page="compresseur"]').classList.add('active');</script>
 
 <script>
 const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
