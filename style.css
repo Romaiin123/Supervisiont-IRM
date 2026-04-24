@@ -341,19 +341,35 @@ canvas {
     left: 22px;
     width: 46px;
     height: 46px;
-    border: 0;
-    border-radius: 14px;
+
+    /* RESET COMPLET */
+    border: none;
+    outline: none;
+    box-shadow: none;
     background: #ffea00;
+    appearance: none;
+    -webkit-appearance: none;
+
+    /* STYLE */
+    border-radius: 14px;
     color: #111827;
     font-size: 1.55rem;
     font-weight: 800;
     line-height: 1;
     z-index: 1300;
     cursor: pointer;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.18);
 
-    outline: none;
+    /* important mobile */
     -webkit-tap-highlight-color: transparent;
+}
+
+/* sécurité totale */
+.menu-toggle:focus,
+.menu-toggle:active,
+.menu-toggle:focus-visible {
+    outline: none;
+    box-shadow: none;
+    background: #ffea00;
 }
 
 .menu-toggle:focus,
