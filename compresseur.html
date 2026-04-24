@@ -99,6 +99,16 @@
         <div class="timestamp" id="etat_time"></div>
     </div>
 
+    <div class="card">
+        <h2>Commande compresseur</h2>
+        <div id="cmd_status" class="status-badge">●</div>
+
+        <div id="cmd_indicator" class="state-indicator unknown"></div>
+        <div class="state-text" id="cmd_text">Commande indisponible</div>
+        <div class="state-subtext" id="cmd_subtext">Aucune donnée exploitable</div>
+        <div class="timestamp" id="cmd_time"></div>
+    </div>
+
 </div>
 
 <script>
@@ -114,7 +124,6 @@ function formatLocalTime(utcString) {
     if (!utcString) return "--";
 
     const date = new Date(utcString);
-
     if (isNaN(date.getTime())) return "--";
 
     const options = {
@@ -313,11 +322,11 @@ function updateEtatCompresseur(value, timestamp) {
     if (Number(value) === 1) {
         indicator.classList.add("on");
         text.textContent = "Compresseur ON";
-        subtext.textContent = "Commande active";
+        subtext.textContent = "";
     } else {
         indicator.classList.add("off");
         text.textContent = "Compresseur OFF";
-        subtext.textContent = "Commande inactive";
+        subtext.textContent = "";
     }
 
     time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
@@ -339,6 +348,54 @@ function setEtatUnavailable(timestamp = null) {
     updateStatus("etat_status", timestamp);
 }
 
+/* ===== AFFICHAGE COMMANDE COMPRESSEUR ===== */
+
+function updateCommandeCompresseur(value, timestamp) {
+    const indicator = document.getElementById("cmd_indicator");
+    const text = document.getElementById("cmd_text");
+    const subtext = document.getElementById("cmd_subtext");
+    const time = document.getElementById("cmd_time");
+
+    indicator.classList.remove("on", "off", "unknown");
+
+    if (!timestamp || !isFresh(timestamp)) {
+        indicator.classList.add("unknown");
+        text.textContent = "Commande indisponible";
+        subtext.textContent = "Dernière donnée trop ancienne";
+        time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+        updateStatus("cmd_status", timestamp);
+        return;
+    }
+
+    if (Number(value) === 1) {
+        indicator.classList.add("on");
+        text.textContent = "Commande MARCHE";
+        subtext.textContent = "Ordre envoyé : tourner";
+    } else {
+        indicator.classList.add("off");
+        text.textContent = "Commande ARRÊT";
+        subtext.textContent = "Ordre envoyé : ne pas tourner";
+    }
+
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("cmd_status", timestamp);
+}
+
+function setCommandeUnavailable(timestamp = null) {
+    const indicator = document.getElementById("cmd_indicator");
+    const text = document.getElementById("cmd_text");
+    const subtext = document.getElementById("cmd_subtext");
+    const time = document.getElementById("cmd_time");
+
+    indicator.classList.remove("on", "off");
+    indicator.classList.add("unknown");
+
+    text.textContent = "Commande indisponible";
+    subtext.textContent = "Aucune donnée exploitable";
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("cmd_status", timestamp);
+}
+
 /* ===== REFRESH ===== */
 
 async function refreshValues() {
@@ -348,6 +405,7 @@ async function refreshValues() {
         if (!comp) {
             updateAmplitudeCard(null);
             setEtatUnavailable(null);
+            setCommandeUnavailable(null);
             return;
         }
 
@@ -359,10 +417,17 @@ async function refreshValues() {
             setEtatUnavailable(comp.timestamp);
         }
 
+        if (comp.commande_compresseur !== null && comp.commande_compresseur !== undefined) {
+            updateCommandeCompresseur(comp.commande_compresseur, comp.timestamp);
+        } else {
+            setCommandeUnavailable(comp.timestamp);
+        }
+
     } catch (error) {
         console.error(error);
         updateAmplitudeCard(null);
         setEtatUnavailable(null);
+        setCommandeUnavailable(null);
     }
 }
 
