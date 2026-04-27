@@ -1,575 +1,577 @@
-:root {
-    --sidebar-width: 292px;
-    --bg: #f4f7fb;
-    --surface: #ffffff;
-    --surface-2: #f8fafc;
-    --text: #1f2937;
-    --muted: #64748b;
-    --border: #e2e8f0;
-    --sidebar: #24272c;
-    --sidebar-2: #2f3338;
-    --accent: #58c63b;
-    --green: #22c55e;
-    --red: #ef4444;
-}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Données Compresseur</title>
 
-* {
-    box-sizing: border-box;
-}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=final">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-html {
-    -webkit-text-size-adjust: 100%;
-}
-
-body {
-    margin: 0;
-    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: var(--bg);
-    color: var(--text);
-}
-
-a {
-    color: inherit;
-}
-
-.app-shell {
-    min-height: 100vh;
-    display: flex;
-}
-
-/* ===== SIDEBAR ===== */
-
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: var(--sidebar-width);
-    background: linear-gradient(180deg, var(--sidebar-2), var(--sidebar));
-    color: #d1d5db;
-    display: flex;
-    flex-direction: column;
-    z-index: 1100;
-    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
-    transition: left 0.3s ease;
-    overflow-y: auto;
-}
-
-.sidebar.closed {
-    left: calc(-1 * var(--sidebar-width));
-}
-
-.sidebar-brand {
-    height: 98px;
-    min-height: 98px;
-    background: #ffea00;
-    color: #111827;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-left: 90px;
-    padding-right: 20px;
-    font-weight: 800;
-}
-
-.sidebar-brand img {
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-}
-
-.sidebar-section {
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sidebar-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 22px;
-    font-size: 0.95rem;
-    color: #f8fafc;
-    font-weight: 700;
-}
-
-.sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 4px 10px;
-}
-
-.sidebar-menu a {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px 12px 26px;
-    border-radius: 10px;
-    color: #cbd5e1;
-    font-weight: 600;
-    font-size: 0.95rem;
-    line-height: 1.2;
-}
-
-.sidebar-menu a:visited {
-    color: #cbd5e1;
-}
-
-.sidebar-menu a:hover,
-.sidebar-menu a.active {
-    background: rgba(255, 255, 255, 0.08);
-    color: #ffffff;
-}
-
-.sidebar-menu .dot {
-    width: 9px;
-    height: 9px;
-    min-width: 9px;
-    border-radius: 50%;
-    background: #94a3b8;
-    display: inline-block;
-}
-
-.sidebar-menu a.active .dot {
-    background: var(--accent);
-    box-shadow: 0 0 10px rgba(88, 198, 59, 0.75);
-}
-
-.sidebar-footer {
-    margin-top: auto;
-    padding: 22px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: #94a3b8;
-}
-
-/* ===== MAIN ===== */
-
-.main-content {
-    margin-left: var(--sidebar-width);
-    width: calc(100% - var(--sidebar-width));
-    min-height: 100vh;
-    transition: margin-left 0.3s ease, width 0.3s ease;
-}
-
-.main-content.full {
-    margin-left: 0;
-    width: 100%;
-}
-
-/* ===== TOPBAR ===== */
-
-.topbar {
-    min-height: 92px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 18px;
-    padding: 20px 42px 20px 86px;
-}
-
-.page-title {
-    margin: 0;
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #334155;
-}
-
-.page-subtitle {
-    margin-top: 6px;
-    color: var(--muted);
-    font-size: 0.92rem;
-}
-
-.topbar-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: flex-end;
-}
-
-.badge-soft {
-    border: 1px solid var(--border);
-    background: var(--surface-2);
-    border-radius: 999px;
-    padding: 8px 12px;
-    color: var(--muted);
-    font-size: 0.88rem;
-    white-space: nowrap;
-}
-
-/* ===== CONTENT ===== */
-
-.container {
-    max-width: 1220px;
-    margin: 34px auto;
-    padding: 0 24px 50px;
-    display: grid;
-    gap: 24px;
-}
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 22px;
-}
-
+<style>
 .card {
     position: relative;
-    background: var(--surface);
-    color: var(--text);
-    padding: 28px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
-    transition: box-shadow 0.25s ease, transform 0.25s ease;
-    min-width: 0;
-    text-decoration: none;
-}
-
-.card:hover {
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.10);
-    transform: translateY(-2px);
-}
-
-.card h2 {
-    margin: 0 0 14px;
-    font-size: 1.12rem;
-    color: #334155;
-}
-
-.card p {
-    margin: 0;
-    color: var(--muted);
-}
-
-.module-card {
-    min-height: 178px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.module-card .metric,
-.metric {
-    font-size: 2.6rem;
-    line-height: 1;
-    font-weight: 400;
-    color: #2f343b;
-    margin: 18px 0 4px;
-}
-
-.module-card .label,
-.label {
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    color: #94a3b8;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-}
-
-.module-card .open,
-.open {
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 0.92rem;
-    margin-top: 18px;
-}
-
-/* ===== VALUES / STATUS ===== */
-
-.value {
-    font-size: 2.4rem;
-    font-weight: 400;
-    color: #2f343b;
-    margin: 14px 0;
-}
-
-.timestamp {
-    color: var(--muted);
-    font-size: 0.92rem;
 }
 
 .status-badge {
     position: absolute;
-    top: 22px;
+    top: 20px;
     right: 25px;
     font-size: 1.4rem;
 }
 
-/* ===== CHARTS ===== */
-
-canvas {
-    margin-top: 20px;
-    max-width: 100%;
+.state-indicator {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin: 24px auto 14px auto;
+    background-color: #64748b;
+    box-shadow: 0 0 14px rgba(100,116,139,0.35);
+    transition: all 0.3s ease;
 }
 
-.chart-controls {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 18px 0 10px 0;
-    align-items: center;
+.state-indicator.on {
+    background-color: #22c55e;
+    box-shadow: 0 0 22px rgba(34,197,94,0.65);
 }
 
-.chart-controls button,
-.chart-controls select {
-    background: #1e293b;
-    color: #e2e8f0;
-    border: 1px solid #334155;
-    border-radius: 8px;
-    padding: 8px 12px;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 0.95rem;
+.state-indicator.off {
+    background-color: #ef4444;
+    box-shadow: 0 0 22px rgba(239,68,68,0.65);
 }
 
-.chart-controls button:hover,
-.chart-controls select:hover {
-    background: #334155;
+.state-indicator.unknown {
+    background-color: #94a3b8;
+    box-shadow: 0 0 20px rgba(148,163,184,0.45);
 }
 
-.chart-controls label {
-    color: #334155;
+.state-text {
+    text-align: center;
+    font-size: 1.15rem;
     font-weight: 700;
-}
-
-.info-note {
     margin-top: 8px;
-    color: var(--muted);
-    font-size: 0.92rem;
+    color: #334155;
 }
 
-.back-button,
-.nav {
-    display: none;
+.state-subtext {
+    text-align: center;
+    font-size: 0.95rem;
+    color: #94a3b8;
+    margin-top: 6px;
 }
 
-/* ===== BOUTON SIDEBAR ===== */
+.timestamp {
+    margin-top: 18px;
+}
+</style>
+</head>
 
-.menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 22px;
-    left: 22px;
-    width: 46px;
-    height: 46px;
+<body>
 
-    border: none;
-    outline: none;
-    box-shadow: none;
-    background: #ffea00;
-    appearance: none;
-    -webkit-appearance: none;
+<button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleMenu()">
+    ☰
+</button>
 
-    border-radius: 14px;
-    color: #111827;
-    font-size: 1.55rem;
-    font-weight: 800;
-    line-height: 1;
-    z-index: 1300;
-    cursor: pointer;
+<div id="overlay" onclick="closeMenu()"></div>
 
-    -webkit-tap-highlight-color: transparent;
+<div class="app-shell">
+
+    <aside id="sidebar" class="sidebar">
+
+        <div class="sidebar-brand">
+            <span>IRM Supervision</span>
+            <img src="Logo_IRM.png" alt="Logo IRM">
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">
+                <span>Monitoring</span>
+                <span>⌄</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="index.html" data-page="index">
+                    <span class="dot"></span>
+                    <span class="label-text">Vue générale</span>
+                </a>
+
+                <a href="atmosphere.html" data-page="atmosphere">
+                    <span class="dot"></span>
+                    <span class="label-text">Atmosphère</span>
+                </a>
+
+                <a href="eaufroide.html" data-page="eaufroide">
+                    <span class="dot"></span>
+                    <span class="label-text">Eau glacée</span>
+                </a>
+
+                <a href="compresseur.html" data-page="compresseur">
+                    <span class="dot"></span>
+                    <span class="label-text">Compresseur</span>
+                </a>
+
+                <a href="groupefroid.html" data-page="groupefroid">
+                    <span class="dot"></span>
+                    <span class="label-text">Groupe froid</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">
+                <span>Système</span>
+                <span>⌄</span>
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#">
+                    <span class="dot"></span>
+                    <span class="label-text">Alertes</span>
+                </a>
+
+                <a href="#">
+                    <span class="dot"></span>
+                    <span class="label-text">Datalogging</span>
+                </a>
+
+                <a href="#">
+                    <span class="dot"></span>
+                    <span class="label-text">Paramètres</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="sidebar-footer">
+            Plateforme IRM – INT<br>
+            Consultation distante
+        </div>
+
+    </aside>
+
+    <main class="main-content">
+
+        <div class="topbar">
+            <div>
+                <h1 class="page-title">Données atmosphériques</h1>
+                <div class="page-subtitle">
+                    Température, humidité et pression de la salle IRM
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <span class="badge-soft">Supabase REST</span>
+                <span class="badge-soft">Lecture seule</span>
+            </div>
+        </div>
+
+        <div class="container">
+
+    <div class="card">
+        <h2>Vibration compresseur</h2>
+        <div id="comp_status" class="status-badge">●</div>
+
+        <div class="value" id="comp_amp">--</div>
+        <div class="timestamp" id="comp_time"></div>
+
+        <canvas id="comp_chart" height="120"></canvas>
+    </div>
+
+    <div class="card">
+        <h2>État compresseur</h2>
+        <div id="etat_status" class="status-badge">●</div>
+
+        <div id="etat_indicator" class="state-indicator unknown"></div>
+        <div class="state-text" id="etat_text">État indisponible</div>
+        <div class="state-subtext" id="etat_subtext">Aucune donnée exploitable</div>
+        <div class="timestamp" id="etat_time"></div>
+    </div>
+
+    <div class="card">
+        <h2>Commande compresseur</h2>
+        <div id="cmd_status" class="status-badge">●</div>
+
+        <div id="cmd_indicator" class="state-indicator unknown"></div>
+        <div class="state-text" id="cmd_text">Commande indisponible</div>
+        <div class="state-subtext" id="cmd_subtext">Aucune donnée exploitable</div>
+        <div class="timestamp" id="cmd_time"></div>
+    </div>
+
+</div>
+
+</main>
+</div>
+<script>document.querySelector('[data-page="compresseur"]').classList.add('active');</script>
+
+<script>
+const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
+const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
+
+const DEVICE_ID = "arduino_ntc_01";
+const DATA_FRESHNESS_LIMIT_MIN = 2;
+
+/* ===== FORMAT DATE / HEURE ===== */
+
+function formatLocalTime(utcString) {
+    if (!utcString) return "--";
+
+    const date = new Date(utcString);
+    if (isNaN(date.getTime())) return "--";
+
+    const options = {
+        timeZone: "Europe/Paris",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+    };
+
+    const parts = new Intl.DateTimeFormat("fr-FR", options).formatToParts(date);
+
+    const year = parts.find(p => p.type === "year")?.value ?? "--";
+    const month = parts.find(p => p.type === "month")?.value ?? "--";
+    const day = parts.find(p => p.type === "day")?.value ?? "--";
+    const hour = parts.find(p => p.type === "hour")?.value ?? "--";
+    const minute = parts.find(p => p.type === "minute")?.value ?? "--";
+
+    return `${year}-${month}-${day} à ${hour}:${minute}`;
 }
 
-.menu-toggle:focus,
-.menu-toggle:active,
-.menu-toggle:focus-visible {
-    outline: none;
-    box-shadow: none;
-    background: #ffea00;
+function getAgeMinutes(timestamp) {
+    const last = new Date(timestamp);
+    if (isNaN(last.getTime())) return Infinity;
+    return (Date.now() - last.getTime()) / 1000 / 60;
 }
 
-/* ===== OVERLAY MOBILE ===== */
-
-#overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.55);
-    backdrop-filter: blur(2px);
-    z-index: 1050;
+function isFresh(timestamp) {
+    return getAgeMinutes(timestamp) <= DATA_FRESHNESS_LIMIT_MIN;
 }
 
-#overlay.active {
-    display: block;
+/* ===== BADGE FRAÎCHEUR ===== */
+
+function updateStatus(badgeId, timestamp) {
+    const badge = document.getElementById(badgeId);
+
+    if (!timestamp || !isFresh(timestamp)) {
+        badge.style.color = "#ef4444";
+        return;
+    }
+
+    badge.style.color = "#22c55e";
 }
 
-/* ===== TABLETTE ===== */
+/* ===== SUPABASE ===== */
 
-@media (max-width: 980px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
+async function fetchLatest(device) {
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&order=timestamp.desc&limit=1`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erreur fetchLatest: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data[0] || null;
+}
+
+async function fetchLast6Hours(device) {
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+
+    const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
+        {
+            headers: {
+                "apikey": SUPABASE_KEY,
+                "Authorization": `Bearer ${SUPABASE_KEY}`
+            }
+        }
+    );
+
+    if (!response.ok) {
+        throw new Error(`Erreur fetchLast6Hours: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+/* ===== GRAPHIQUE ===== */
+
+let compChart = null;
+
+function createChart(data) {
+    const ctx = document.getElementById("comp_chart").getContext("2d");
+
+    const validData = data.filter(d => d.amplitude !== null && d.amplitude !== undefined);
+
+    const labels = validData.map(d => {
+        const date = new Date(d.timestamp);
+        return date.toLocaleTimeString("fr-FR", {
+            timeZone: "Europe/Paris",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+        });
+    });
+
+    const values = validData.map(d => Number(d.amplitude));
+
+    return new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Amplitude vibration",
+                data: values,
+                borderColor: "#f97316",
+                backgroundColor: "rgba(249,115,22,0.12)",
+                tension: 0.3,
+                fill: true,
+                pointRadius: 0,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                x: {
+                    ticks: {
+                        color: "#94a3b8",
+                        maxRotation: 0,
+                        autoSkip: true,
+                        maxTicksLimit: 8
+                    },
+                    grid: {
+                        color: "rgba(148,163,184,0.08)"
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: "#94a3b8"
+                    },
+                    grid: {
+                        color: "rgba(148,163,184,0.08)"
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        color: "#e2e8f0"
+                    }
+                }
+            }
+        }
+    });
+}
+
+/* ===== AFFICHAGE VIBRATION ===== */
+
+function updateAmplitudeCard(comp) {
+    const ampEl = document.getElementById("comp_amp");
+    const timeEl = document.getElementById("comp_time");
+
+    if (!comp || comp.amplitude === null || comp.amplitude === undefined) {
+        ampEl.textContent = "--";
+        timeEl.textContent = "Dernière mesure : --";
+        document.getElementById("comp_status").style.color = "#ef4444";
+        return;
+    }
+
+    ampEl.textContent = Number(comp.amplitude).toFixed(2);
+    timeEl.textContent = "Dernière mesure : " + formatLocalTime(comp.timestamp);
+    updateStatus("comp_status", comp.timestamp);
+}
+
+/* ===== AFFICHAGE ÉTAT COMPRESSEUR ===== */
+
+function updateEtatCompresseur(value, timestamp) {
+    const indicator = document.getElementById("etat_indicator");
+    const text = document.getElementById("etat_text");
+    const subtext = document.getElementById("etat_subtext");
+    const time = document.getElementById("etat_time");
+
+    indicator.classList.remove("on", "off", "unknown");
+
+    if (!timestamp || !isFresh(timestamp)) {
+        indicator.classList.add("unknown");
+        text.textContent = "État indisponible";
+        subtext.textContent = "Dernière donnée trop ancienne";
+        time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+        updateStatus("etat_status", timestamp);
+        return;
+    }
+
+    if (Number(value) === 1) {
+        indicator.classList.add("on");
+        text.textContent = "Compresseur ON";
+        subtext.textContent = "";
+    } else {
+        indicator.classList.add("off");
+        text.textContent = "Compresseur OFF";
+        subtext.textContent = "";
+    }
+
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("etat_status", timestamp);
+}
+
+function setEtatUnavailable(timestamp = null) {
+    const indicator = document.getElementById("etat_indicator");
+    const text = document.getElementById("etat_text");
+    const subtext = document.getElementById("etat_subtext");
+    const time = document.getElementById("etat_time");
+
+    indicator.classList.remove("on", "off");
+    indicator.classList.add("unknown");
+
+    text.textContent = "État indisponible";
+    subtext.textContent = "Aucune donnée exploitable";
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("etat_status", timestamp);
+}
+
+/* ===== AFFICHAGE COMMANDE COMPRESSEUR ===== */
+
+function updateCommandeCompresseur(value, timestamp) {
+    const indicator = document.getElementById("cmd_indicator");
+    const text = document.getElementById("cmd_text");
+    const subtext = document.getElementById("cmd_subtext");
+    const time = document.getElementById("cmd_time");
+
+    indicator.classList.remove("on", "off", "unknown");
+
+    if (!timestamp || !isFresh(timestamp)) {
+        indicator.classList.add("unknown");
+        text.textContent = "Commande indisponible";
+        subtext.textContent = "Dernière donnée trop ancienne";
+        time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+        updateStatus("cmd_status", timestamp);
+        return;
+    }
+
+    if (Number(value) === 1) {
+        indicator.classList.add("on");
+        text.textContent = "Commande MARCHE";
+        subtext.textContent = "Ordre envoyé : tourner";
+    } else {
+        indicator.classList.add("off");
+        text.textContent = "Commande ARRÊT";
+        subtext.textContent = "Ordre envoyé : ne pas tourner";
+    }
+
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("cmd_status", timestamp);
+}
+
+function setCommandeUnavailable(timestamp = null) {
+    const indicator = document.getElementById("cmd_indicator");
+    const text = document.getElementById("cmd_text");
+    const subtext = document.getElementById("cmd_subtext");
+    const time = document.getElementById("cmd_time");
+
+    indicator.classList.remove("on", "off");
+    indicator.classList.add("unknown");
+
+    text.textContent = "Commande indisponible";
+    subtext.textContent = "Aucune donnée exploitable";
+    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
+    updateStatus("cmd_status", timestamp);
+}
+
+/* ===== REFRESH ===== */
+
+async function refreshValues() {
+    try {
+        const comp = await fetchLatest(DEVICE_ID);
+
+        if (!comp) {
+            updateAmplitudeCard(null);
+            setEtatUnavailable(null);
+            setCommandeUnavailable(null);
+            return;
+        }
+
+        updateAmplitudeCard(comp);
+
+        if (comp.comptfetat !== null && comp.comptfetat !== undefined) {
+            updateEtatCompresseur(comp.comptfetat, comp.timestamp);
+        } else {
+            setEtatUnavailable(comp.timestamp);
+        }
+
+        if (comp.commande_compresseur !== null && comp.commande_compresseur !== undefined) {
+            updateCommandeCompresseur(comp.commande_compresseur, comp.timestamp);
+        } else {
+            setCommandeUnavailable(comp.timestamp);
+        }
+
+    } catch (error) {
+        console.error(error);
+        updateAmplitudeCard(null);
+        setEtatUnavailable(null);
+        setCommandeUnavailable(null);
     }
 }
 
-/* ===== MOBILE OFF-CANVAS ===== */
+async function loadChart() {
+    try {
+        const data = await fetchLast6Hours(DEVICE_ID);
 
-@media (max-width: 720px) {
-    .sidebar {
-        left: calc(-1 * var(--sidebar-width));
-        width: var(--sidebar-width);
-        height: 100vh;
-        bottom: auto;
-    }
+        if (compChart) {
+            compChart.destroy();
+        }
 
-    .sidebar.active {
-        left: 0;
-    }
-
-    .sidebar.closed {
-        left: calc(-1 * var(--sidebar-width));
-    }
-
-    .sidebar-brand {
-        height: 98px;
-        min-height: 98px;
-        padding-left: 90px;
-        padding-right: 20px;
-    }
-
-    .sidebar-brand img {
-        width: 38px;
-        height: 38px;
-    }
-
-    .sidebar-brand span {
-        font-size: 1rem;
-    }
-
-    .main-content,
-    .main-content.full {
-        margin-left: 0;
-        width: 100%;
-    }
-
-    .topbar {
-        min-height: auto;
-        display: block;
-        padding: 18px 16px 18px 82px;
-    }
-
-    .page-title {
-        font-size: 1.15rem;
-        line-height: 1.25;
-    }
-
-    .page-subtitle {
-        font-size: 0.86rem;
-    }
-
-    .topbar-actions {
-        display: none;
-    }
-
-    .container {
-        margin: 18px auto;
-        padding: 0 12px 34px;
-        gap: 16px;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-    }
-
-    .card {
-        padding: 18px;
-        border-radius: 10px;
-    }
-
-    .card:hover {
-        transform: none;
-    }
-
-    .card h2 {
-        font-size: 1rem;
-        padding-right: 24px;
-    }
-
-    .module-card {
-        min-height: 145px;
-    }
-
-    .module-card .metric,
-    .metric {
-        font-size: 2rem;
-        margin: 14px 0 4px;
-    }
-
-    .value {
-        font-size: 1.8rem;
-        line-height: 1.15;
-        overflow-wrap: anywhere;
-    }
-
-    .timestamp {
-        font-size: 0.82rem;
-    }
-
-    .status-badge {
-        top: 16px;
-        right: 16px;
-        font-size: 1.15rem;
-    }
-
-    .chart-controls {
-        gap: 8px;
-    }
-
-    .chart-controls label {
-        width: 100%;
-        font-size: 0.9rem;
-    }
-
-    .chart-controls button,
-    .chart-controls select {
-        flex: 1 1 calc(50% - 8px);
-        min-width: 130px;
-        padding: 10px 8px;
-        font-size: 0.86rem;
-    }
-
-    canvas {
-        min-height: 220px;
+        compChart = createChart(data || []);
+    } catch (error) {
+        console.error(error);
     }
 }
 
-@media (max-width: 420px) {
-    .menu-toggle {
-        top: 14px;
-        left: 14px;
-        width: 44px;
-        height: 44px;
-    }
+/* ===== TIMERS ===== */
 
-    .page-title {
-        font-size: 1.05rem;
-    }
+refreshValues();
+loadChart();
 
-    .page-subtitle {
-        font-size: 0.8rem;
-    }
+setInterval(refreshValues, 30000);
+setInterval(loadChart, 60000);
+</script>
 
-    .card {
-        padding: 16px;
-    }
-
-    .module-card .metric,
-    .metric {
-        font-size: 1.75rem;
-    }
-
-    .value {
-        font-size: 1.55rem;
+<script>
+function toggleMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const main = document.querySelector(".main-content");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !main || !overlay) return;
+    if (window.innerWidth <= 720) {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    } else {
+        sidebar.classList.toggle("closed");
+        main.classList.toggle("full");
     }
 }
+function closeMenu() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    if (!sidebar || !overlay) return;
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+}
+document.querySelectorAll(".sidebar-menu a").forEach(a => {
+    a.addEventListener("click", () => {
+        if (window.innerWidth <= 720) closeMenu();
+    });
+});
+</script>
+</body>
+</html>
