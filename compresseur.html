@@ -7,13 +7,12 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=final">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1"></script>
 
 <style>
-.card {
-    position: relative;
-}
-
 .status-badge {
     position: absolute;
     top: 20px;
@@ -59,10 +58,43 @@
     font-size: 0.95rem;
     color: #94a3b8;
     margin-top: 6px;
+    min-height: 20px;
 }
 
-.timestamp {
-    margin-top: 18px;
+.chart-controls {
+    margin-top: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.chart-controls label {
+    color: #334155;
+    font-weight: 600;
+}
+
+.chart-controls select,
+.chart-controls button {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.chart-controls button:hover,
+.chart-controls select:hover {
+    background: #f1f5f9;
+}
+
+.info-note {
+    margin-top: 8px;
+    color: #94a3b8;
+    font-size: 0.92rem;
 }
 </style>
 </head>
@@ -153,9 +185,9 @@
 
         <div class="topbar">
             <div>
-                <h1 class="page-title">Données atmosphériques</h1>
+                <h1 class="page-title">Données compresseur</h1>
                 <div class="page-subtitle">
-                    Température, humidité et pression de la salle IRM
+                    Amplitude vibratoire, état de fonctionnement et commande compresseur
                 </div>
             </div>
 
@@ -167,41 +199,64 @@
 
         <div class="container">
 
-    <div class="card">
-        <h2>Vibration compresseur</h2>
-        <div id="comp_status" class="status-badge">●</div>
+            <div class="card">
+                <h2>Vibration compresseur</h2>
+                <div id="comp_status" class="status-badge">●</div>
 
-        <div class="value" id="comp_amp">--</div>
-        <div class="timestamp" id="comp_time"></div>
+                <div class="value" id="comp_amp">--</div>
+                <div class="timestamp" id="comp_time"></div>
 
-        <canvas id="comp_chart" height="120"></canvas>
-    </div>
+                <div class="chart-controls">
+                    <label for="comp_range_select">Plage :</label>
 
-    <div class="card">
-        <h2>État compresseur</h2>
-        <div id="etat_status" class="status-badge">●</div>
+                    <select id="comp_range_select">
+                        <option value="24">24 h</option>
+                        <option value="48">48 h</option>
+                        <option value="72">3 jours</option>
+                        <option value="96">4 jours</option>
+                    </select>
 
-        <div id="etat_indicator" class="state-indicator unknown"></div>
-        <div class="state-text" id="etat_text">État indisponible</div>
-        <div class="state-subtext" id="etat_subtext">Aucune donnée exploitable</div>
-        <div class="timestamp" id="etat_time"></div>
-    </div>
+                    <button onclick="zoomIn()">Zoom +</button>
+                    <button onclick="zoomOut()">Zoom -</button>
+                    <button onclick="setAutoYScale()">Amplitude auto</button>
+                    <button onclick="resetZoom()">Réinitialiser zoom</button>
+                </div>
 
-    <div class="card">
-        <h2>Commande compresseur</h2>
-        <div id="cmd_status" class="status-badge">●</div>
+                <div class="info-note">
+                    Clic maintenu + déplacement = navigation dans le graphe
+                </div>
 
-        <div id="cmd_indicator" class="state-indicator unknown"></div>
-        <div class="state-text" id="cmd_text">Commande indisponible</div>
-        <div class="state-subtext" id="cmd_subtext">Aucune donnée exploitable</div>
-        <div class="timestamp" id="cmd_time"></div>
-    </div>
+                <canvas id="comp_chart" height="120"></canvas>
+            </div>
 
+            <div class="card">
+                <h2>État compresseur</h2>
+                <div id="etat_status" class="status-badge">●</div>
+
+                <div id="etat_indicator" class="state-indicator unknown"></div>
+                <div class="state-text" id="etat_text">État indisponible</div>
+                <div class="state-subtext" id="etat_subtext">Aucune donnée exploitable</div>
+                <div class="timestamp" id="etat_time"></div>
+            </div>
+
+            <div class="card">
+                <h2>Commande compresseur</h2>
+                <div id="cmd_status" class="status-badge">●</div>
+
+                <div id="cmd_indicator" class="state-indicator unknown"></div>
+                <div class="state-text" id="cmd_text">Commande indisponible</div>
+                <div class="state-subtext" id="cmd_subtext">Aucune donnée exploitable</div>
+                <div class="timestamp" id="cmd_time"></div>
+            </div>
+
+        </div>
+
+    </main>
 </div>
 
-</main>
-</div>
-<script>document.querySelector('[data-page="compresseur"]').classList.add('active');</script>
+<script>
+document.querySelector('[data-page="compresseur"]').classList.add('active');
+</script>
 
 <script>
 const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
@@ -254,6 +309,8 @@ function isFresh(timestamp) {
 function updateStatus(badgeId, timestamp) {
     const badge = document.getElementById(badgeId);
 
+    if (!badge) return;
+
     if (!timestamp || !isFresh(timestamp)) {
         badge.style.color = "#ef4444";
         return;
@@ -283,11 +340,11 @@ async function fetchLatest(device) {
     return data[0] || null;
 }
 
-async function fetchLast6Hours(device) {
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
+async function fetchRange(device, hours) {
+    const startDate = new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
     const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
+        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${startDate}&order=timestamp.asc&limit=6000`,
         {
             headers: {
                 "apikey": SUPABASE_KEY,
@@ -297,25 +354,55 @@ async function fetchLast6Hours(device) {
     );
 
     if (!response.ok) {
-        throw new Error(`Erreur fetchLast6Hours: ${response.status}`);
+        throw new Error(`Erreur fetchRange: ${response.status}`);
     }
 
     return await response.json();
 }
 
-/* ===== GRAPHIQUE ===== */
+/* ===== GRAPHIQUE VIBRATION ===== */
 
 let compChart = null;
+let currentCompRangeHours = 24;
+let currentCompData = [];
+
+function getSuggestedYBounds(values, padding = 5) {
+    if (!values || values.length === 0) {
+        return { min: 0, max: 100 };
+    }
+
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+
+    let min = Math.floor(minVal - padding);
+    let max = Math.ceil(maxVal + padding);
+
+    if (min === max) {
+        min -= 5;
+        max += 5;
+    }
+
+    if (min < 0) min = 0;
+
+    return { min, max };
+}
 
 function createChart(data) {
     const ctx = document.getElementById("comp_chart").getContext("2d");
 
-    const validData = data.filter(d => d.amplitude !== null && d.amplitude !== undefined);
+    const validData = data.filter(d =>
+        d.amplitude !== null &&
+        d.amplitude !== undefined &&
+        !isNaN(Number(d.amplitude))
+    );
 
     const labels = validData.map(d => {
         const date = new Date(d.timestamp);
-        return date.toLocaleTimeString("fr-FR", {
+
+        return date.toLocaleString("fr-FR", {
             timeZone: "Europe/Paris",
+            day: "2-digit",
+            month: "2-digit",
             hour: "2-digit",
             minute: "2-digit",
             hour12: false
@@ -323,6 +410,7 @@ function createChart(data) {
     });
 
     const values = validData.map(d => Number(d.amplitude));
+    const bounds = getSuggestedYBounds(values, 5);
 
     return new Chart(ctx, {
         type: "line",
@@ -336,25 +424,32 @@ function createChart(data) {
                 tension: 0.3,
                 fill: true,
                 pointRadius: 0,
+                pointHoverRadius: 4,
                 borderWidth: 2
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: true,
+            interaction: {
+                mode: "nearest",
+                intersect: false
+            },
             scales: {
                 x: {
                     ticks: {
                         color: "#94a3b8",
                         maxRotation: 0,
                         autoSkip: true,
-                        maxTicksLimit: 8
+                        maxTicksLimit: 10
                     },
                     grid: {
                         color: "rgba(148,163,184,0.08)"
                     }
                 },
                 y: {
+                    min: bounds.min,
+                    max: bounds.max,
                     ticks: {
                         color: "#94a3b8"
                     },
@@ -366,12 +461,82 @@ function createChart(data) {
             plugins: {
                 legend: {
                     labels: {
-                        color: "#e2e8f0"
+                        color: "#334155"
+                    }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: "xy"
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: false
+                        },
+                        pinch: {
+                            enabled: false
+                        },
+                        drag: {
+                            enabled: false
+                        },
+                        mode: "xy"
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ` Amplitude : ${context.parsed.y.toFixed(2)}`;
+                        }
                     }
                 }
             }
         }
     });
+}
+
+function setAutoYScale() {
+    if (!compChart || currentCompData.length === 0) return;
+
+    const values = currentCompData
+        .filter(d => d.amplitude !== null && d.amplitude !== undefined && !isNaN(Number(d.amplitude)))
+        .map(d => Number(d.amplitude));
+
+    const bounds = getSuggestedYBounds(values, 5);
+
+    compChart.options.scales.y.min = bounds.min;
+    compChart.options.scales.y.max = bounds.max;
+    compChart.update();
+}
+
+function zoomIn() {
+    if (!compChart) return;
+    compChart.zoom(1.2);
+}
+
+function zoomOut() {
+    if (!compChart) return;
+    compChart.zoom(0.8);
+}
+
+function resetZoom() {
+    if (!compChart) return;
+    compChart.resetZoom();
+    setAutoYScale();
+}
+
+async function loadChart() {
+    try {
+        const data = await fetchRange(DEVICE_ID, currentCompRangeHours);
+        currentCompData = data || [];
+
+        if (compChart) {
+            compChart.destroy();
+        }
+
+        compChart = createChart(currentCompData);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 /* ===== AFFICHAGE VIBRATION ===== */
@@ -488,7 +653,7 @@ function setCommandeUnavailable(timestamp = null) {
     updateStatus("cmd_status", timestamp);
 }
 
-/* ===== REFRESH ===== */
+/* ===== REFRESH VALEURS ===== */
 
 async function refreshValues() {
     try {
@@ -523,21 +688,12 @@ async function refreshValues() {
     }
 }
 
-async function loadChart() {
-    try {
-        const data = await fetchLast6Hours(DEVICE_ID);
+/* ===== INITIALISATION ===== */
 
-        if (compChart) {
-            compChart.destroy();
-        }
-
-        compChart = createChart(data || []);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-/* ===== TIMERS ===== */
+document.getElementById("comp_range_select").addEventListener("change", async function () {
+    currentCompRangeHours = Number(this.value);
+    await loadChart();
+});
 
 refreshValues();
 loadChart();
@@ -551,7 +707,9 @@ function toggleMenu() {
     const sidebar = document.getElementById("sidebar");
     const main = document.querySelector(".main-content");
     const overlay = document.getElementById("overlay");
+
     if (!sidebar || !main || !overlay) return;
+
     if (window.innerWidth <= 720) {
         sidebar.classList.toggle("active");
         overlay.classList.toggle("active");
@@ -560,18 +718,23 @@ function toggleMenu() {
         main.classList.toggle("full");
     }
 }
+
 function closeMenu() {
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
+
     if (!sidebar || !overlay) return;
+
     sidebar.classList.remove("active");
     overlay.classList.remove("active");
 }
+
 document.querySelectorAll(".sidebar-menu a").forEach(a => {
     a.addEventListener("click", () => {
         if (window.innerWidth <= 720) closeMenu();
     });
 });
 </script>
+
 </body>
 </html>
