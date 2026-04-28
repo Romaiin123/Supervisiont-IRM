@@ -1,577 +1,318 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Données Compresseur</title>
+:root {
+    --sidebar-width: 292px;
+    --bg: #f4f7fb;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --text: #1f2937;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --sidebar: #24272c;
+    --sidebar-2: #2f3338;
+    --accent: #58c63b;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f97316;
+}
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=final">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+* {
+    box-sizing: border-box;
+}
 
-<style>
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: var(--sidebar-width);
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--sidebar), var(--sidebar-2));
+    color: #f8fafc;
+    padding: 22px 16px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transition: transform 0.25s ease;
+    z-index: 1000;
+}
+
+.sidebar.closed {
+    transform: translateX(calc(-1 * var(--sidebar-width)));
+}
+
+.sidebar-brand {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 8px 18px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.12);
+    margin-bottom: 22px;
+}
+
+.sidebar-brand span {
+    font-size: 1.28rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+
+.sidebar-brand img {
+    height: 46px;
+    width: auto;
+    object-fit: contain;
+}
+
+.sidebar-section {
+    margin-bottom: 26px;
+}
+
+.sidebar-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 10px;
+    margin-bottom: 10px;
+}
+
+.sidebar-menu {
+    display: grid;
+    gap: 7px;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 12px;
+    border-radius: 12px;
+    color: #e2e8f0;
+    font-weight: 600;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sidebar-menu a:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+.sidebar-menu a.active {
+    background: rgba(88,198,59,0.18);
+    color: #ffffff;
+}
+
+.dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #94a3b8;
+    flex: 0 0 auto;
+}
+
+.sidebar-menu a.active .dot {
+    background: var(--accent);
+    box-shadow: 0 0 12px rgba(88,198,59,0.75);
+}
+
+.label-text {
+    white-space: nowrap;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 22px;
+    left: 16px;
+    right: 16px;
+    color: #cbd5e1;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    padding: 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.06);
+}
+
+/* MAIN */
+
+.main-content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-height: 100vh;
+    padding: 34px;
+    transition: margin-left 0.25s ease, width 0.25s ease;
+}
+
+.main-content.full {
+    margin-left: 0;
+    width: 100%;
+}
+
+.topbar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 26px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    box-shadow: 0 12px 35px rgba(15,23,42,0.06);
+    margin-bottom: 28px;
+}
+
+.page-title {
+    margin: 0;
+    font-size: 1.9rem;
+    color: var(--text);
+}
+
+.page-subtitle {
+    margin-top: 7px;
+    color: var(--muted);
+    font-size: 1rem;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.badge-soft {
+    padding: 9px 13px;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #166534;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+/* MENU MOBILE */
+
+.menu-toggle {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    z-index: 1100;
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #1e293b;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(15,23,42,0.16);
+}
+
+#overlay {
+    display: none;
+}
+
+/* CONTAINER / CARDS */
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+}
+
 .card {
     position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 0 12px 35px rgba(15,23,42,0.07);
+    min-width: 0;
 }
 
-.status-badge {
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    font-size: 1.4rem;
+.card h2 {
+    margin: 0 0 18px 0;
+    color: var(--text);
+    font-size: 1.25rem;
 }
 
-.state-indicator {
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    margin: 24px auto 14px auto;
-    background-color: #64748b;
-    box-shadow: 0 0 14px rgba(100,116,139,0.35);
-    transition: all 0.3s ease;
-}
-
-.state-indicator.on {
-    background-color: #22c55e;
-    box-shadow: 0 0 22px rgba(34,197,94,0.65);
-}
-
-.state-indicator.off {
-    background-color: #ef4444;
-    box-shadow: 0 0 22px rgba(239,68,68,0.65);
-}
-
-.state-indicator.unknown {
-    background-color: #94a3b8;
-    box-shadow: 0 0 20px rgba(148,163,184,0.45);
-}
-
-.state-text {
-    text-align: center;
-    font-size: 1.15rem;
+.value {
+    font-size: 2.2rem;
     font-weight: 700;
-    margin-top: 8px;
-    color: #334155;
-}
-
-.state-subtext {
-    text-align: center;
-    font-size: 0.95rem;
-    color: #94a3b8;
-    margin-top: 6px;
+    color: var(--text);
+    margin: 10px 0;
 }
 
 .timestamp {
-    margin-top: 18px;
-}
-</style>
-</head>
-
-<body>
-
-<button class="menu-toggle" type="button" aria-label="Ouvrir le menu" onclick="toggleMenu()">
-    ☰
-</button>
-
-<div id="overlay" onclick="closeMenu()"></div>
-
-<div class="app-shell">
-
-    <aside id="sidebar" class="sidebar">
-
-        <div class="sidebar-brand">
-            <span>IRM Supervision</span>
-            <img src="Logo_IRM.png" alt="Logo IRM">
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-title">
-                <span>Monitoring</span>
-                <span>⌄</span>
-            </div>
-
-            <nav class="sidebar-menu">
-                <a href="index.html" data-page="index">
-                    <span class="dot"></span>
-                    <span class="label-text">Vue générale</span>
-                </a>
-
-                <a href="atmosphere.html" data-page="atmosphere">
-                    <span class="dot"></span>
-                    <span class="label-text">Atmosphère</span>
-                </a>
-
-                <a href="eaufroide.html" data-page="eaufroide">
-                    <span class="dot"></span>
-                    <span class="label-text">Eau glacée</span>
-                </a>
-
-                <a href="compresseur.html" data-page="compresseur">
-                    <span class="dot"></span>
-                    <span class="label-text">Compresseur</span>
-                </a>
-
-                <a href="groupefroid.html" data-page="groupefroid">
-                    <span class="dot"></span>
-                    <span class="label-text">Groupe froid</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="sidebar-section">
-            <div class="sidebar-title">
-                <span>Système</span>
-                <span>⌄</span>
-            </div>
-
-            <nav class="sidebar-menu">
-                <a href="#">
-                    <span class="dot"></span>
-                    <span class="label-text">Alertes</span>
-                </a>
-
-                <a href="#">
-                    <span class="dot"></span>
-                    <span class="label-text">Datalogging</span>
-                </a>
-
-                <a href="#">
-                    <span class="dot"></span>
-                    <span class="label-text">Paramètres</span>
-                </a>
-            </nav>
-        </div>
-
-        <div class="sidebar-footer">
-            Plateforme IRM – INT<br>
-            Consultation distante
-        </div>
-
-    </aside>
-
-    <main class="main-content">
-
-        <div class="topbar">
-            <div>
-                <h1 class="page-title">Données atmosphériques</h1>
-                <div class="page-subtitle">
-                    Température, humidité et pression de la salle IRM
-                </div>
-            </div>
-
-            <div class="topbar-actions">
-                <span class="badge-soft">Supabase REST</span>
-                <span class="badge-soft">Lecture seule</span>
-            </div>
-        </div>
-
-        <div class="container">
-
-    <div class="card">
-        <h2>Vibration compresseur</h2>
-        <div id="comp_status" class="status-badge">●</div>
-
-        <div class="value" id="comp_amp">--</div>
-        <div class="timestamp" id="comp_time"></div>
-
-        <canvas id="comp_chart" height="120"></canvas>
-    </div>
-
-    <div class="card">
-        <h2>État compresseur</h2>
-        <div id="etat_status" class="status-badge">●</div>
-
-        <div id="etat_indicator" class="state-indicator unknown"></div>
-        <div class="state-text" id="etat_text">État indisponible</div>
-        <div class="state-subtext" id="etat_subtext">Aucune donnée exploitable</div>
-        <div class="timestamp" id="etat_time"></div>
-    </div>
-
-    <div class="card">
-        <h2>Commande compresseur</h2>
-        <div id="cmd_status" class="status-badge">●</div>
-
-        <div id="cmd_indicator" class="state-indicator unknown"></div>
-        <div class="state-text" id="cmd_text">Commande indisponible</div>
-        <div class="state-subtext" id="cmd_subtext">Aucune donnée exploitable</div>
-        <div class="timestamp" id="cmd_time"></div>
-    </div>
-
-</div>
-
-</main>
-</div>
-<script>document.querySelector('[data-page="compresseur"]').classList.add('active');</script>
-
-<script>
-const SUPABASE_URL = "https://xkqizqpflgcmyiqluuie.supabase.co";
-const SUPABASE_KEY = "sb_publishable_87i8-j5iiLISsoBSBvC7ng_RlE5TPrr";
-
-const DEVICE_ID = "arduino_ntc_01";
-const DATA_FRESHNESS_LIMIT_MIN = 2;
-
-/* ===== FORMAT DATE / HEURE ===== */
-
-function formatLocalTime(utcString) {
-    if (!utcString) return "--";
-
-    const date = new Date(utcString);
-    if (isNaN(date.getTime())) return "--";
-
-    const options = {
-        timeZone: "Europe/Paris",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    };
-
-    const parts = new Intl.DateTimeFormat("fr-FR", options).formatToParts(date);
-
-    const year = parts.find(p => p.type === "year")?.value ?? "--";
-    const month = parts.find(p => p.type === "month")?.value ?? "--";
-    const day = parts.find(p => p.type === "day")?.value ?? "--";
-    const hour = parts.find(p => p.type === "hour")?.value ?? "--";
-    const minute = parts.find(p => p.type === "minute")?.value ?? "--";
-
-    return `${year}-${month}-${day} à ${hour}:${minute}`;
+    color: var(--muted);
+    font-size: 0.92rem;
 }
 
-function getAgeMinutes(timestamp) {
-    const last = new Date(timestamp);
-    if (isNaN(last.getTime())) return Infinity;
-    return (Date.now() - last.getTime()) / 1000 / 60;
+canvas {
+    margin-top: 20px;
 }
 
-function isFresh(timestamp) {
-    return getAgeMinutes(timestamp) <= DATA_FRESHNESS_LIMIT_MIN;
-}
+/* RESPONSIVE */
 
-/* ===== BADGE FRAÎCHEUR ===== */
-
-function updateStatus(badgeId, timestamp) {
-    const badge = document.getElementById(badgeId);
-
-    if (!timestamp || !isFresh(timestamp)) {
-        badge.style.color = "#ef4444";
-        return;
-    }
-
-    badge.style.color = "#22c55e";
-}
-
-/* ===== SUPABASE ===== */
-
-async function fetchLatest(device) {
-    const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&order=timestamp.desc&limit=1`,
-        {
-            headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`
-            }
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Erreur fetchLatest: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data[0] || null;
-}
-
-async function fetchLast6Hours(device) {
-    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString();
-
-    const response = await fetch(
-        `${SUPABASE_URL}/rest/v1/measurements?device_id=eq.${device}&timestamp=gte.${sixHoursAgo}&order=timestamp.asc`,
-        {
-            headers: {
-                "apikey": SUPABASE_KEY,
-                "Authorization": `Bearer ${SUPABASE_KEY}`
-            }
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error(`Erreur fetchLast6Hours: ${response.status}`);
-    }
-
-    return await response.json();
-}
-
-/* ===== GRAPHIQUE ===== */
-
-let compChart = null;
-
-function createChart(data) {
-    const ctx = document.getElementById("comp_chart").getContext("2d");
-
-    const validData = data.filter(d => d.amplitude !== null && d.amplitude !== undefined);
-
-    const labels = validData.map(d => {
-        const date = new Date(d.timestamp);
-        return date.toLocaleTimeString("fr-FR", {
-            timeZone: "Europe/Paris",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-        });
-    });
-
-    const values = validData.map(d => Number(d.amplitude));
-
-    return new Chart(ctx, {
-        type: "line",
-        data: {
-            labels: labels,
-            datasets: [{
-                label: "Amplitude vibration",
-                data: values,
-                borderColor: "#f97316",
-                backgroundColor: "rgba(249,115,22,0.12)",
-                tension: 0.3,
-                fill: true,
-                pointRadius: 0,
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                x: {
-                    ticks: {
-                        color: "#94a3b8",
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 8
-                    },
-                    grid: {
-                        color: "rgba(148,163,184,0.08)"
-                    }
-                },
-                y: {
-                    ticks: {
-                        color: "#94a3b8"
-                    },
-                    grid: {
-                        color: "rgba(148,163,184,0.08)"
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    labels: {
-                        color: "#e2e8f0"
-                    }
-                }
-            }
-        }
-    });
-}
-
-/* ===== AFFICHAGE VIBRATION ===== */
-
-function updateAmplitudeCard(comp) {
-    const ampEl = document.getElementById("comp_amp");
-    const timeEl = document.getElementById("comp_time");
-
-    if (!comp || comp.amplitude === null || comp.amplitude === undefined) {
-        ampEl.textContent = "--";
-        timeEl.textContent = "Dernière mesure : --";
-        document.getElementById("comp_status").style.color = "#ef4444";
-        return;
-    }
-
-    ampEl.textContent = Number(comp.amplitude).toFixed(2);
-    timeEl.textContent = "Dernière mesure : " + formatLocalTime(comp.timestamp);
-    updateStatus("comp_status", comp.timestamp);
-}
-
-/* ===== AFFICHAGE ÉTAT COMPRESSEUR ===== */
-
-function updateEtatCompresseur(value, timestamp) {
-    const indicator = document.getElementById("etat_indicator");
-    const text = document.getElementById("etat_text");
-    const subtext = document.getElementById("etat_subtext");
-    const time = document.getElementById("etat_time");
-
-    indicator.classList.remove("on", "off", "unknown");
-
-    if (!timestamp || !isFresh(timestamp)) {
-        indicator.classList.add("unknown");
-        text.textContent = "État indisponible";
-        subtext.textContent = "Dernière donnée trop ancienne";
-        time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-        updateStatus("etat_status", timestamp);
-        return;
-    }
-
-    if (Number(value) === 1) {
-        indicator.classList.add("on");
-        text.textContent = "Compresseur ON";
-        subtext.textContent = "";
-    } else {
-        indicator.classList.add("off");
-        text.textContent = "Compresseur OFF";
-        subtext.textContent = "";
-    }
-
-    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-    updateStatus("etat_status", timestamp);
-}
-
-function setEtatUnavailable(timestamp = null) {
-    const indicator = document.getElementById("etat_indicator");
-    const text = document.getElementById("etat_text");
-    const subtext = document.getElementById("etat_subtext");
-    const time = document.getElementById("etat_time");
-
-    indicator.classList.remove("on", "off");
-    indicator.classList.add("unknown");
-
-    text.textContent = "État indisponible";
-    subtext.textContent = "Aucune donnée exploitable";
-    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-    updateStatus("etat_status", timestamp);
-}
-
-/* ===== AFFICHAGE COMMANDE COMPRESSEUR ===== */
-
-function updateCommandeCompresseur(value, timestamp) {
-    const indicator = document.getElementById("cmd_indicator");
-    const text = document.getElementById("cmd_text");
-    const subtext = document.getElementById("cmd_subtext");
-    const time = document.getElementById("cmd_time");
-
-    indicator.classList.remove("on", "off", "unknown");
-
-    if (!timestamp || !isFresh(timestamp)) {
-        indicator.classList.add("unknown");
-        text.textContent = "Commande indisponible";
-        subtext.textContent = "Dernière donnée trop ancienne";
-        time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-        updateStatus("cmd_status", timestamp);
-        return;
-    }
-
-    if (Number(value) === 1) {
-        indicator.classList.add("on");
-        text.textContent = "Commande MARCHE";
-        subtext.textContent = "Ordre envoyé : tourner";
-    } else {
-        indicator.classList.add("off");
-        text.textContent = "Commande ARRÊT";
-        subtext.textContent = "Ordre envoyé : ne pas tourner";
-    }
-
-    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-    updateStatus("cmd_status", timestamp);
-}
-
-function setCommandeUnavailable(timestamp = null) {
-    const indicator = document.getElementById("cmd_indicator");
-    const text = document.getElementById("cmd_text");
-    const subtext = document.getElementById("cmd_subtext");
-    const time = document.getElementById("cmd_time");
-
-    indicator.classList.remove("on", "off");
-    indicator.classList.add("unknown");
-
-    text.textContent = "Commande indisponible";
-    subtext.textContent = "Aucune donnée exploitable";
-    time.textContent = "Dernière mesure : " + formatLocalTime(timestamp);
-    updateStatus("cmd_status", timestamp);
-}
-
-/* ===== REFRESH ===== */
-
-async function refreshValues() {
-    try {
-        const comp = await fetchLatest(DEVICE_ID);
-
-        if (!comp) {
-            updateAmplitudeCard(null);
-            setEtatUnavailable(null);
-            setCommandeUnavailable(null);
-            return;
-        }
-
-        updateAmplitudeCard(comp);
-
-        if (comp.comptfetat !== null && comp.comptfetat !== undefined) {
-            updateEtatCompresseur(comp.comptfetat, comp.timestamp);
-        } else {
-            setEtatUnavailable(comp.timestamp);
-        }
-
-        if (comp.commande_compresseur !== null && comp.commande_compresseur !== undefined) {
-            updateCommandeCompresseur(comp.commande_compresseur, comp.timestamp);
-        } else {
-            setCommandeUnavailable(comp.timestamp);
-        }
-
-    } catch (error) {
-        console.error(error);
-        updateAmplitudeCard(null);
-        setEtatUnavailable(null);
-        setCommandeUnavailable(null);
+@media (max-width: 1100px) {
+    .container {
+        grid-template-columns: 1fr;
     }
 }
 
-async function loadChart() {
-    try {
-        const data = await fetchLast6Hours(DEVICE_ID);
+@media (max-width: 720px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
 
-        if (compChart) {
-            compChart.destroy();
-        }
+    .sidebar.active {
+        transform: translateX(0);
+    }
 
-        compChart = createChart(data || []);
-    } catch (error) {
-        console.error(error);
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 84px 18px 24px 18px;
+    }
+
+    .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 22px;
+    }
+
+    .page-title {
+        font-size: 1.55rem;
+    }
+
+    .card {
+        padding: 22px;
+    }
+
+    #overlay.active {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(15,23,42,0.45);
+        z-index: 900;
     }
 }
-
-/* ===== TIMERS ===== */
-
-refreshValues();
-loadChart();
-
-setInterval(refreshValues, 30000);
-setInterval(loadChart, 60000);
-</script>
-
-<script>
-function toggleMenu() {
-    const sidebar = document.getElementById("sidebar");
-    const main = document.querySelector(".main-content");
-    const overlay = document.getElementById("overlay");
-    if (!sidebar || !main || !overlay) return;
-    if (window.innerWidth <= 720) {
-        sidebar.classList.toggle("active");
-        overlay.classList.toggle("active");
-    } else {
-        sidebar.classList.toggle("closed");
-        main.classList.toggle("full");
-    }
-}
-function closeMenu() {
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    if (!sidebar || !overlay) return;
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-}
-document.querySelectorAll(".sidebar-menu a").forEach(a => {
-    a.addEventListener("click", () => {
-        if (window.innerWidth <= 720) closeMenu();
-    });
-});
-</script>
-</body>
-</html>
